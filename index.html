@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17554C">
+<title>Pantau Obat · Dashboard Stok</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#142523;
+    --ink-soft:#5b6b67;
+    --bg:#f1f5f2;
+    --card:#ffffff;
+    --border:#dce7e2;
+    --brand:#17554c;
+    --brand-light:#1f7a6c;
+    --brand-bg:#e6f0ed;
+
+    --dawn:#a87c1f;    --dawn-bg:#fbf2de;
+    --dusk:#b5652f;    --dusk-bg:#fbeadf;
+    --night:#33456b;   --night-bg:#e9ecf3;
+
+    --ok:#1d8a5f;     --ok-bg:#e4f5ec;
+    --warn:#b8790f;   --warn-bg:#fcefda;
+    --bad:#c6483d;    --bad-bg:#fbe7e5;
+
+    --radius-lg:18px;
+    --radius-md:12px;
+    --radius-sm:8px;
+    --serif:'Fraunces', Georgia, serif;
+    --sans:'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0;
+    font-family:var(--sans);
+    background:var(--bg);
+    color:var(--ink);
+    padding-bottom:86px;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{ color:inherit; }
+  button{ font-family:inherit; }
+  :focus-visible{ outline:2.5px solid var(--brand-light); outline-offset:2px; }
+
+  /* ---------- header ---------- */
+  .topbar{
+    background:linear-gradient(165deg,var(--brand) 0%, #123f39 100%);
+    color:#fff;
+    padding:18px 18px 20px;
+    border-radius:0 0 22px 22px;
+  }
+  .topbar-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .app-title{ font-family:var(--serif); font-weight:600; font-size:21px; margin:0; letter-spacing:.2px; }
+  .app-sub{ margin:2px 0 0; font-size:12.5px; color:#cfe4de; }
+  .sync-pill{
+    display:flex; align-items:center; gap:6px; font-size:11.5px; color:#dff0ec;
+    background:rgba(255,255,255,.1); padding:5px 10px; border-radius:999px; white-space:nowrap;
+  }
+  .dot{ width:7px; height:7px; border-radius:50%; background:#7be3b7; flex-shrink:0; }
+  .dot.busy{ background:#f3c96b; }
+  .dot.err{ background:#f0847a; }
+
+  .datebar{
+    margin-top:16px; display:flex; align-items:center; gap:8px;
+    background:rgba(255,255,255,.12); border-radius:var(--radius-md); padding:9px 12px;
+  }
+  .datebar-label{ font-size:15.5px; font-weight:600; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .datebar input[type=date]{ position:absolute; opacity:0; width:1px; height:1px; pointer-events:none; }
+  .icon-btn{
+    background:rgba(255,255,255,.16); border:none; color:#fff; border-radius:9px;
+    padding:7px 9px; font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer;
+  }
+  .icon-btn:active{ background:rgba(255,255,255,.28); }
+
+  /* ---------- generic section ---------- */
+  .section{ padding:20px 16px 4px; max-width:640px; margin:0 auto; }
+  .section-head{ font-size:16.5px; font-weight:700; margin:0 0 12px; color:var(--ink); }
+  .section-head small{ display:block; font-weight:500; font-size:12px; color:var(--ink-soft); margin-top:1px; }
+
+  /* ---------- alert strip ---------- */
+  .alerts{ padding:14px 16px 0; max-width:640px; margin:0 auto; display:none; flex-direction:column; gap:8px; }
+  .alerts.show{ display:flex; }
+  .alert{ display:flex; gap:9px; align-items:flex-start; padding:11px 13px; border-radius:var(--radius-md); font-size:13.3px; line-height:1.42; }
+  .alert.bad{ background:var(--bad-bg); color:#7a2b24; }
+  .alert.warn{ background:var(--warn-bg); color:#7a5209; }
+  .alert svg{ flex-shrink:0; margin-top:1px; }
+
+  /* ---------- pages ---------- */
+  .page{ display:none; }
+  .page.active{ display:block; }
+
+  /* ---------- timeline (schedule) ---------- */
+  .timeline{ position:relative; }
+  .slot{ position:relative; padding-left:40px; padding-bottom:22px; }
+  .slot:last-child{ padding-bottom:2px; }
+  .slot::before{ content:''; position:absolute; left:15px; top:34px; bottom:-2px; width:2px; background:var(--border); }
+  .slot:last-child::before{ display:none; }
+  .slot-marker{ position:absolute; left:0; top:0; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .slot-marker svg{ width:17px; height:17px; }
+  .slot[data-accent="dawn"] .slot-marker{ background:var(--dawn-bg); color:var(--dawn); }
+  .slot[data-accent="dusk"] .slot-marker{ background:var(--dusk-bg); color:var(--dusk); }
+  .slot[data-accent="night"] .slot-marker{ background:var(--night-bg); color:var(--night); }
+  .slot-heading{ display:flex; align-items:baseline; gap:8px; padding-top:5px; margin-bottom:9px; }
+  .slot-time{ font-size:12px; font-variant-numeric:tabular-nums; color:var(--ink-soft); }
+  .slot-label{ font-size:14.5px; font-weight:700; }
+  .slot-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; }
+  .dose-row{ display:flex; align-items:center; gap:11px; padding:11px 13px; }
+  .dose-row + .dose-row{ border-top:1px solid var(--border); }
+  .dose-row.done{ background:#fafcfb; }
+  .dose-row.locked{ opacity:.55; }
+  .checkbox{
+    width:23px; height:23px; border-radius:7px; border:2px solid #c6d3cd; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; background:#fff;
+  }
+  .checkbox svg{ width:14px; height:14px; opacity:0; transform:scale(.6); transition:opacity .12s, transform .12s; }
+  .dose-row.done .checkbox{ background:var(--brand-light); border-color:var(--brand-light); }
+  .dose-row.done .checkbox svg{ opacity:1; transform:scale(1); color:#fff; }
+  .dose-row.locked .checkbox{ cursor:not-allowed; }
+  .dose-info{ flex:1; min-width:0; }
+  .dose-name{ font-size:14.5px; font-weight:600; line-height:1.3; }
+  .dose-row.done .dose-name{ text-decoration:line-through; text-decoration-color:#a9bcb6; color:var(--ink-soft); }
+  .dose-meta{ font-size:12px; color:var(--ink-soft); margin-top:1px; }
+  .tag-sub{ display:inline-block; font-size:10.5px; font-weight:600; color:var(--dusk); background:var(--dusk-bg); padding:1.5px 6px; border-radius:5px; margin-left:5px; vertical-align:1px; }
+  .tag-out{ display:inline-block; font-size:10.5px; font-weight:600; color:var(--bad); background:var(--bad-bg); padding:1.5px 6px; border-radius:5px; margin-left:5px; vertical-align:1px; }
+
+  /* ---------- restock page ---------- */
+  .restock-list{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; }
+  .restock-row{ padding:12px 13px; }
+  .restock-row + .restock-row{ border-top:1px solid var(--border); }
+  .restock-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .restock-name{ font-size:14px; font-weight:600; }
+  .restock-name .muted{ font-weight:500; color:var(--ink-soft); font-size:12px; }
+  .edit-icon{ background:none; border:none; color:var(--ink-soft); padding:4px; cursor:pointer; display:flex; flex-shrink:0; }
+  .restock-current{ font-size:12px; color:var(--ink-soft); margin:5px 0 9px; }
+  .restock-current b{ color:var(--ink); font-family:var(--serif); font-size:14px; }
+  .restock-actions{ display:flex; gap:8px; }
+  .restock-input{ width:88px; border:1.5px solid var(--border); border-radius:8px; padding:8px 10px; font-size:14px; font-family:var(--serif); min-width:0; }
+  .restock-add{ flex:1; background:var(--brand); color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; padding:0 10px; cursor:pointer; }
+  .restock-add:active{ background:var(--brand-light); }
+
+  .restock-history{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; margin-bottom:10px; }
+  .restock-hist-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 13px; font-size:12.5px; gap:8px; }
+  .restock-hist-row + .restock-hist-row{ border-top:1px solid var(--border); }
+  .restock-hist-name{ font-weight:600; }
+  .restock-hist-meta{ color:var(--ink-soft); font-size:11px; margin-top:1px; }
+  .restock-hist-qty{ color:var(--ok); font-weight:700; font-family:var(--serif); font-size:15px; flex-shrink:0; }
+  .empty-note{ text-align:center; color:var(--ink-soft); font-size:12.5px; padding:18px; margin:0; }
+
+  /* ---------- laporan page ---------- */
+  .chart-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 10px 10px; margin-bottom:10px; }
+  .chart-loading{ font-size:12px; color:var(--ink-soft); text-align:center; padding:26px 0; margin:0; }
+  .chart-legend{ display:flex; flex-wrap:wrap; gap:8px 14px; margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:10.5px; color:var(--ink-soft); }
+  .chart-legend i{ display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:4px; vertical-align:1px; }
+
+  .status-slot{ margin-bottom:14px; }
+  .status-slot:last-child{ margin-bottom:0; }
+  .status-slot-title{ font-size:11.5px; font-weight:700; color:var(--ink-soft); margin-bottom:6px; text-transform:none; }
+  .status-row{ display:flex; align-items:center; gap:9px; background:var(--card); border:1px solid var(--border); padding:9px 11px; border-radius:10px; margin-bottom:6px; }
+  .status-row:last-child{ margin-bottom:0; }
+  .status-icon{ width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .status-icon svg{ width:11px; height:11px; }
+  .status-row.done .status-icon{ background:var(--ok-bg); color:var(--ok); }
+  .status-row.pending .status-icon{ background:#eef1ef; color:#9aa39e; }
+  .status-name{ flex:1; font-size:13px; font-weight:600; min-width:0; }
+  .status-name em{ display:block; font-style:normal; font-weight:500; color:var(--dusk); font-size:11px; }
+  .status-tag{ font-size:11px; font-weight:700; color:var(--ink-soft); flex-shrink:0; }
+  .status-row.done .status-tag{ color:var(--ok); }
+
+  /* ---------- print button ---------- */
+  .print-wrap{ padding:22px 16px 6px; max-width:640px; margin:0 auto; }
+  .btn-print{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:9px;
+    background:#fff; border:1.5px solid var(--brand); color:var(--brand);
+    font-size:14.5px; font-weight:700; padding:13px; border-radius:var(--radius-md); cursor:pointer;
+  }
+  .btn-print:active{ background:var(--brand-bg); }
+  .foot-note{ text-align:center; font-size:11px; color:var(--ink-soft); padding:14px 20px 4px; }
+
+  /* ---------- bottom nav ---------- */
+  .bottom-nav{
+    position:fixed; left:0; right:0; bottom:0; z-index:40;
+    display:flex; background:#fff; border-top:1px solid var(--border);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  }
+  .nav-btn{
+    flex:1; background:none; border:none; display:flex; flex-direction:column; align-items:center; gap:3px;
+    padding:6px 2px; color:#9aa8a2; font-size:10.5px; font-weight:600; cursor:pointer;
+  }
+  .nav-btn svg{ width:20px; height:20px; }
+  .nav-btn.active{ color:var(--brand); }
+
+  /* ---------- modal ---------- */
+  .overlay{ position:fixed; inset:0; background:rgba(15,30,27,.45); display:none; align-items:flex-end; justify-content:center; z-index:50; }
+  .overlay.show{ display:flex; }
+  .modal{ background:#fff; width:100%; max-width:420px; border-radius:20px 20px 0 0; padding:20px 20px 24px; }
+  @media (min-width:520px){ .overlay{ align-items:center; } .modal{ border-radius:18px; } }
+  .modal h3{ margin:0 0 3px; font-size:16px; }
+  .modal p{ margin:0 0 14px; font-size:12.5px; color:var(--ink-soft); }
+  .modal input[type=number]{ width:100%; font-size:20px; font-family:var(--serif); padding:11px 13px; border-radius:10px; border:1.5px solid var(--border); margin-bottom:14px; }
+  .modal-actions{ display:flex; gap:10px; }
+  .modal-actions button{ flex:1; padding:12px; border-radius:10px; font-size:14px; font-weight:700; border:none; cursor:pointer; }
+  .btn-cancel{ background:#f0f3f1; color:var(--ink); }
+  .btn-save{ background:var(--brand); color:#fff; }
+  .toast{
+    position:fixed; left:50%; bottom:78px; transform:translateX(-50%); background:#1c2b28; color:#fff;
+    padding:11px 18px; border-radius:10px; font-size:13px; z-index:60; opacity:0; pointer-events:none;
+    transition:opacity .2s; max-width:88vw; text-align:center;
+  }
+  .toast.show{ opacity:1; }
+
+  /* ---------- print ---------- */
+  #printReport{ display:none; }
+  @media print{
+    body *{ visibility:hidden; }
+    #printReport, #printReport *{ visibility:visible; }
+    #printReport{ display:block; position:absolute; top:0; left:0; width:100%; padding:14px; }
+    .p-h1{ font-family:var(--serif); font-size:19px; margin:0 0 2px; }
+    .p-sub{ font-size:11.5px; color:#555; margin:0 0 14px; }
+    .p-section-title{ font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; margin:16px 0 6px; border-bottom:1px solid #333; padding-bottom:3px; }
+    table{ width:100%; border-collapse:collapse; font-size:11.5px; }
+    th,td{ text-align:left; padding:5px 4px; border-bottom:1px solid #ddd; }
+    th{ font-weight:700; }
+    .p-ok{ color:#1a7a4f; } .p-warn{ color:#946108; } .p-bad{ color:#a83b31; font-weight:700; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-row">
+      <div>
+        <p class="app-title">Pantau Obat</p>
+        <p class="app-sub">Dashboard stok &amp; jadwal minum obat</p>
+      </div>
+      <div class="sync-pill"><span class="dot" id="syncDot"></span><span id="syncLabel">Memuat…</span></div>
+    </div>
+    <div class="datebar">
+      <span class="datebar-label" id="dateLabel">–</span>
+      <button class="icon-btn" id="todayBtn" title="Kembali ke hari ini">Hari ini</button>
+      <button class="icon-btn" id="calBtn" aria-label="Pilih tanggal">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      </button>
+      <input type="date" id="datePicker">
+    </div>
+  </div>
+
+  <div class="alerts" id="alertBox"></div>
+
+  <main class="pages">
+    <!-- ===== PAGE 1: JADWAL ===== -->
+    <section class="page active" id="page-jadwal">
+      <div class="section">
+        <p class="section-head">Jadwal hari ini<small>Ketuk kotak saat obat sudah diminum — stok akan otomatis berkurang</small></p>
+        <div class="timeline" id="timeline"></div>
+      </div>
+    </section>
+
+    <!-- ===== PAGE 2: TAMBAH STOK ===== -->
+    <section class="page" id="page-stok">
+      <div class="section">
+        <p class="section-head">Tambah stok obat<small>Masukkan jumlah yang baru dibeli/diterima, lalu ketuk Tambah</small></p>
+        <div class="restock-list" id="restockList"></div>
+      </div>
+      <div class="section">
+        <p class="section-head">Riwayat penambahan stok<small>20 catatan terbaru</small></p>
+        <div class="restock-history" id="restockHistory"><p class="empty-note">Memuat riwayat…</p></div>
+      </div>
+    </section>
+
+    <!-- ===== PAGE 3: LAPORAN ===== -->
+    <section class="page" id="page-laporan">
+      <div class="section">
+        <p class="section-head">Grafik stok saat ini<small>Dibandingkan dengan stok awal 5 September 2026</small></p>
+        <div class="chart-card">
+          <div id="stockChart"><p class="chart-loading">Memuat grafik…</p></div>
+          <div class="chart-legend">
+            <span><i style="background:#1d8a5f"></i>Aman</span>
+            <span><i style="background:#b8790f"></i>Menipis (≤7 hari)</span>
+            <span><i style="background:#c6483d"></i>Kritis / habis (≤3 hari)</span>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <p class="section-head">Grafik kepatuhan 7 hari terakhir<small>Persentase dosis yang diminum per hari</small></p>
+        <div class="chart-card">
+          <div id="adherenceChart"><p class="chart-loading">Memuat grafik…</p></div>
+          <div class="chart-legend">
+            <span><i style="background:#1d8a5f"></i>Semua diminum</span>
+            <span><i style="background:#b8790f"></i>Sebagian</span>
+            <span><i style="background:#c6483d"></i>Belum ada</span>
+            <span><i style="background:#e3ebe7"></i>Tidak ada data</span>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <p class="section-head">Status jadwal &amp; minum obat<small id="statusDateLabel">–</small></p>
+        <div id="statusList"></div>
+      </div>
+      <div class="print-wrap">
+        <button class="btn-print" id="printBtn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Cetak laporan harian
+        </button>
+        <p class="foot-note">Stok awal dicatat 5 September 2026 · data tersinkron otomatis lewat Firebase</p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-page="jadwal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="17" rx="2.5"/><path d="M8 2.5v3M16 2.5v3M4 10h16"/><path d="m9 14.5 2 2 4-4.2"/></svg>
+      <span>Jadwal</span>
+    </button>
+    <button class="nav-btn" data-page="stok">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      <span>Tambah Stok</span>
+    </button>
+    <button class="nav-btn" data-page="laporan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V12M10 20V6M16 20v-8M4 20h16"/></svg>
+      <span>Laporan</span>
+    </button>
+  </nav>
+
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <h3 id="modalTitle">Koreksi stok</h3>
+      <p id="modalSub">Masukkan jumlah stok saat ini.</p>
+      <input type="number" inputmode="numeric" min="0" id="modalInput">
+      <div class="modal-actions">
+        <button class="btn-cancel" id="modalCancel">Batal</button>
+        <button class="btn-save" id="modalSave">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div id="printReport">
+    <p class="p-h1">Laporan Harian Konsumsi Obat</p>
+    <p class="p-sub" id="pDate">–</p>
+    <div class="p-section-title">Jadwal &amp; status minum obat</div>
+    <table>
+      <thead><tr><th>Waktu</th><th>Obat</th><th>Dosis</th><th>Status</th></tr></thead>
+      <tbody id="pSchedule"></tbody>
+    </table>
+    <div class="p-section-title">Ringkasan stok</div>
+    <table>
+      <thead><tr><th>Obat</th><th>Stok awal 5 Sep 2026</th><th>Stok saat ini</th><th>Estimasi habis</th></tr></thead>
+      <tbody id="pStock"></tbody>
+    </table>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, increment,
+  collection, addDoc, serverTimestamp, query, orderBy, limit
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA5VeYSTXmBpceDwbqIddooSdaIB9maDg8",
+  authDomain: "iuran-db.firebaseapp.com",
+  projectId: "iuran-db",
+  storageBucket: "iuran-db.firebasestorage.app",
+  messagingSenderId: "380835597026",
+  appId: "1:380835597026:web:402b8d837243c3e2dbecbb"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* ---------------- data model ---------------- */
+const MEDICINES = {
+  paracetamol:    { name:'Paracetamol',   dose:'500 mg',  unit:'tablet', initial:9  },
+  astika:         { name:'Astika',        dose:'100 mg',  unit:'tablet', initial:4  },
+  digoxin:        { name:'Digoxin',       dose:'0.25 mg', unit:'tablet', initial:5  },
+  atorvastatin:   { name:'Atorvastatin',  dose:'20 mg',   unit:'tablet', initial:14 },
+  furosemide:     { name:'Furosemide',    dose:'40 mg',   unit:'tablet', initial:5  },
+  cefixime:       { name:'Cefixime',      dose:'100 mg',  unit:'kapsul', initial:9  },
+  citicoline:     { name:'Citicoline',    dose:'500 mg',  unit:'tablet', initial:9  },
+  spironolactone: { name:'Spironolacton', dose:'25 mg',   unit:'tablet', initial:4  },
+  lansoprazole:   { name:'Lansoptazole',  dose:'30 mg',   unit:'kapsul', initial:15 },
+  clopidogrel:    { name:'Clopidogrel',   dose:'75 mg',   unit:'tablet', initial:30 },
+};
+
+const COLORS = { ok:'#1d8a5f', warn:'#b8790f', bad:'#c6483d', border:'#e3ebe7', ink:'#142523', inkSoft:'#5b6b67' };
+
+const ICONS = {
+  sunrise:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 18h16"/><path d="M7 18a5 5 0 0 1 10 0"/><path d="M12 8v3"/><path d="M8.5 9.5 10 11"/><path d="M15.5 9.5 14 11"/></svg>',
+  sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 3v2.3M12 18.7V21M4.2 12H2M22 12h-2.2M5.6 5.6l1.5 1.5M16.9 16.9l1.5 1.5M5.6 18.4l1.5-1.5M16.9 7.1l1.5-1.5"/></svg>',
+  sunset:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 18h16"/><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 6v4"/><path d="m9 8 1.5 1.5"/><path d="m15 8-1.5 1.5"/></svg>',
+  moon:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.2 14.2c-.5 3.9-3.9 6.9-7.9 6.9-4.4 0-8-3.6-8-8 0-4 3-7.3 6.9-7.9.5-.1.9.4.6.8-.7 1.1-1.1 2.4-1.1 3.7 0 3.9 3.2 7.1 7.1 7.1 1.3 0 2.6-.4 3.7-1.1.4-.3.9.1.7.5Z"/></svg>',
+};
+const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+const X_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+const EDIT_ICON = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+
+const SCHEDULE = [
+  { id:'pagi1', time:'06:00', label:'Pagi · 2 jam sebelum makan', icon:'sunrise', accent:'dawn',
+    items:[ {key:'lansoprazole', qty:1} ] },
+  { id:'pagi2', time:'07:30', label:'Pagi · sesudah makan', icon:'sun', accent:'dawn',
+    items:[
+      {key:'furosemide', qty:1}, {key:'digoxin', qty:1}, {key:'paracetamol', qty:1},
+      {key:'cefixime', qty:1}, {key:'citicoline', qty:1},
+    ] },
+  { id:'sore', time:'17:00', label:'Sore · sesudah makan', icon:'sunset', accent:'dusk',
+    items:[
+      {key:'astika_sub', qty:1, substitute:true, primary:'astika', backup:'clopidogrel'},
+      {key:'paracetamol', qty:1}, {key:'cefixime', qty:1}, {key:'citicoline', qty:1},
+    ] },
+  { id:'malam', time:'20:00', label:'Malam · sesudah makan', icon:'moon', accent:'night',
+    items:[ {key:'spironolactone', qty:1}, {key:'atorvastatin', qty:1} ] },
+];
+const TOTAL_DOSES = SCHEDULE.reduce((s,slot)=>s+slot.items.length,0);
+const DAYS_SHORT=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+
+/* ---------------- state ---------------- */
+const state = { stock:null, log:null, date: toDateStr(new Date()) };
+let unsubLog = null;
+let currentPage = 'jadwal';
+let restockListBuilt = false;
+
+/* ---------------- helpers ---------------- */
+function toDateStr(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+const DAYS=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+function humanDate(dateStr){
+  const [y,m,d]=dateStr.split('-').map(Number);
+  const dt=new Date(y,m-1,d);
+  return DAYS[dt.getDay()]+', '+d+' '+MONTHS[m-1]+' '+y;
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t=setTimeout(()=>t.classList.remove('show'),2400);
+}
+function setSync(mode){
+  const dot=document.getElementById('syncDot'), label=document.getElementById('syncLabel');
+  dot.className='dot'+(mode==='busy'?' busy':mode==='err'?' err':'');
+  label.textContent = mode==='busy'?'Menyimpan…':mode==='err'?'Gagal sinkron':mode==='loading'?'Memuat…':'Tersinkron';
+}
+
+function computeUsage(stock){
+  const usage={}; for(const k in MEDICINES) usage[k]=0;
+  SCHEDULE.forEach(slot=>slot.items.forEach(item=>{
+    if(item.substitute){
+      const useKey = (stock && stock[item.primary]>0) ? item.primary : item.backup;
+      usage[useKey]+=item.qty;
+    } else usage[item.key]+=item.qty;
+  }));
+  return usage;
+}
+function stockStatus(qty, use){
+  if(qty<=0) return {level:'bad', label:'Stok habis'};
+  if(use<=0) return {level:'ok', label:'Aman'};
+  const days=Math.floor(qty/use);
+  if(days<=3) return {level:'bad', label:'≈ '+days+' hari lagi'};
+  if(days<=7) return {level:'warn', label:'≈ '+days+' hari lagi'};
+  return {level:'ok', label:'≈ '+days+' hari lagi'};
+}
+
+/* ---------------- firestore init ---------------- */
+async function ensureStockDoc(){
+  const ref=doc(db,'medStock','current');
+  const snap=await getDoc(ref);
+  if(!snap.exists()){
+    const initial={};
+    for(const k in MEDICINES) initial[k]=MEDICINES[k].initial;
+    initial._initializedAt='2026-09-05';
+    await setDoc(ref, initial);
+  }
+}
+function listenStock(){
+  const ref=doc(db,'medStock','current');
+  onSnapshot(ref, snap=>{
+    state.stock = snap.exists() ? snap.data() : {};
+    render();
+  }, err=>{ console.error(err); setSync('err'); toast('Gagal memuat data stok. Periksa Firestore & aturan keamanan.'); });
+}
+function listenLog(dateStr){
+  if(unsubLog) unsubLog();
+  state.log=null;
+  const ref=doc(db,'medLogs',dateStr);
+  unsubLog=onSnapshot(ref, snap=>{
+    state.log = snap.exists() ? snap.data() : {};
+    render();
+  }, err=>{ console.error(err); setSync('err'); toast('Gagal memuat jadwal harian.'); });
+}
+function listenRestockHistory(){
+  const q = query(collection(db,'restockLog'), orderBy('ts','desc'), limit(20));
+  onSnapshot(q, snap=>{
+    const rows=[];
+    snap.forEach(d=>rows.push(d.data()));
+    renderRestockHistory(rows);
+  }, err=>{ console.error(err); document.getElementById('restockHistory').innerHTML='<p class="empty-note">Gagal memuat riwayat.</p>'; });
+}
+
+/* ---------------- dose toggle (Jadwal page) ---------------- */
+async function toggleDose(slot, item){
+  if(!state.stock) return;
+  const fieldKey = slot.id+'_'+item.key;
+  const log = state.log || {};
+  const currentlyChecked = !!log[fieldKey];
+  const newChecked = !currentlyChecked;
+
+  let medKeyUsed;
+  if(item.substitute){
+    if(newChecked){
+      medKeyUsed = (state.stock[item.primary]>0) ? item.primary : item.backup;
+      if((state.stock[medKeyUsed]||0) <= 0){
+        toast('Stok '+MEDICINES[item.primary].name+' dan '+MEDICINES[item.backup].name+' sama-sama habis.');
+        return;
+      }
+    } else {
+      medKeyUsed = log[fieldKey+'_med'] || item.primary;
+    }
+  } else {
+    medKeyUsed = item.key;
+    if(newChecked && (state.stock[medKeyUsed]||0) <= 0){
+      toast('Stok '+MEDICINES[medKeyUsed].name+' habis, tidak bisa dicatat.');
+      return;
+    }
+  }
+
+  const delta = newChecked ? -item.qty : item.qty;
+  setSync('busy');
+  try{
+    await updateDoc(doc(db,'medStock','current'), { [medKeyUsed]: increment(delta) });
+    const payload = { [fieldKey]: newChecked };
+    if(item.substitute) payload[fieldKey+'_med'] = medKeyUsed;
+    await setDoc(doc(db,'medLogs',state.date), payload, { merge:true });
+    setSync('ok');
+  }catch(e){
+    console.error(e); setSync('err');
+    toast('Gagal menyimpan. Coba lagi.');
+  }
+}
+
+/* ---------------- stock correction modal ---------------- */
+function openStockModal(key){
+  const med=MEDICINES[key];
+  document.getElementById('modalTitle').textContent='Koreksi stok — '+med.name;
+  document.getElementById('modalSub').textContent='Dosis '+med.dose+' · satuan '+med.unit+'. Gunakan ini untuk mengoreksi jumlah persis (bukan menambah).';
+  const input=document.getElementById('modalInput');
+  input.value = state.stock ? (state.stock[key]||0) : 0;
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('modalSave').onclick=async()=>{
+    const val=parseInt(input.value,10);
+    if(isNaN(val) || val<0){ toast('Masukkan angka yang valid.'); return; }
+    setSync('busy');
+    try{
+      await setDoc(doc(db,'medStock','current'), { [key]: val }, { merge:true });
+      setSync('ok'); toast('Stok '+med.name+' diperbarui.');
+    }catch(e){ console.error(e); setSync('err'); toast('Gagal menyimpan koreksi stok.'); }
+    document.getElementById('overlay').classList.remove('show');
+  };
+}
+document.getElementById('modalCancel').onclick=()=>document.getElementById('overlay').classList.remove('show');
+document.getElementById('overlay').addEventListener('click',e=>{ if(e.target.id==='overlay') e.currentTarget.classList.remove('show'); });
+
+/* ---------------- add stock (Tambah Stok page) ---------------- */
+async function addStock(key, qty){
+  setSync('busy');
+  try{
+    await updateDoc(doc(db,'medStock','current'), { [key]: increment(qty) });
+    await addDoc(collection(db,'restockLog'), {
+      medKey:key, medName:MEDICINES[key].name, unit:MEDICINES[key].unit, qty,
+      date: toDateStr(new Date()), ts: serverTimestamp()
+    });
+    setSync('ok');
+    toast('Stok '+MEDICINES[key].name+' +'+qty+' ditambahkan.');
+  }catch(e){ console.error(e); setSync('err'); toast('Gagal menambah stok.'); }
+}
+function ensureRestockList(){
+  if(restockListBuilt) return;
+  const el=document.getElementById('restockList');
+  el.innerHTML = Object.keys(MEDICINES).map(k=>{
+    const med=MEDICINES[k];
+    return '<div class="restock-row" data-key="'+k+'">'
+      + '<div class="restock-top"><div class="restock-name">'+med.name+' <span class="muted">'+med.dose+'</span></div>'
+      + '<button class="edit-icon" data-key="'+k+'" aria-label="Koreksi stok manual">'+EDIT_ICON+'</button></div>'
+      + '<div class="restock-current">Stok saat ini: <b id="cur-'+k+'">–</b> '+med.unit+'</div>'
+      + '<div class="restock-actions">'
+      + '<input type="number" inputmode="numeric" min="1" class="restock-input" placeholder="Jumlah">'
+      + '<button class="restock-add" type="button">+ Tambah</button>'
+      + '</div></div>';
+  }).join('');
+  el.querySelectorAll('.restock-row').forEach(row=>{
+    const key=row.dataset.key;
+    const input=row.querySelector('.restock-input');
+    row.querySelector('.restock-add').addEventListener('click', ()=>{
+      const qty=parseInt(input.value,10);
+      if(!qty || qty<=0){ toast('Masukkan jumlah yang valid.'); return; }
+      addStock(key, qty);
+      input.value='';
+    });
+    row.querySelector('.edit-icon').addEventListener('click', ()=>openStockModal(key));
+  });
+  restockListBuilt=true;
+}
+function updateRestockNumbers(){
+  if(!state.stock) return;
+  Object.keys(MEDICINES).forEach(k=>{
+    const el=document.getElementById('cur-'+k);
+    if(el) el.textContent = state.stock[k]||0;
+  });
+}
+function renderRestockHistory(rows){
+  const el=document.getElementById('restockHistory');
+  if(!rows.length){ el.innerHTML='<p class="empty-note">Belum ada riwayat penambahan stok.</p>'; return; }
+  el.innerHTML = rows.map(r=>{
+    let when = r.date || '';
+    if(r.ts && typeof r.ts.toDate === 'function'){
+      const dt=r.ts.toDate();
+      when = String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+' · '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+    }
+    return '<div class="restock-hist-row"><div><div class="restock-hist-name">'+(r.medName||'')+'</div>'
+      + '<div class="restock-hist-meta">'+when+'</div></div>'
+      + '<div class="restock-hist-qty">+'+r.qty+' '+(r.unit||'')+'</div></div>';
+  }).join('');
+}
+
+/* ---------------- rendering: Jadwal page ---------------- */
+function render(){
+  document.getElementById('dateLabel').textContent = humanDate(state.date);
+  if(!state.stock || !state.log){ setSync('loading'); return; }
+
+  const usage = computeUsage(state.stock);
+  renderAlerts(usage);
+  renderTimeline();
+  updateRestockNumbers();
+  if(currentPage==='laporan'){ renderStockChart(); renderStatusList(); }
+}
+
+function renderAlerts(usage){
+  const box=document.getElementById('alertBox');
+  const bad=[], warn=[];
+  for(const k in MEDICINES){
+    const qty=state.stock[k]||0;
+    const st=stockStatus(qty, usage[k]);
+    if(st.level==='bad') bad.push(MEDICINES[k].name);
+    else if(st.level==='warn') warn.push(MEDICINES[k].name);
+  }
+  let html='';
+  if(bad.length) html += '<div class="alert bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span><b>Segera isi ulang:</b> '+bad.join(', ')+'.</span></div>';
+  if(warn.length) html += '<div class="alert warn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span><b>Stok menipis:</b> '+warn.join(', ')+'.</span></div>';
+  box.innerHTML=html;
+  box.classList.toggle('show', !!html);
+}
+
+function doseDisplay(slot, item){
+  const fieldKey = slot.id+'_'+item.key;
+  const checked = !!state.log[fieldKey];
+  let medKey, isBackup=false;
+  if(item.substitute){
+    medKey = checked ? (state.log[fieldKey+'_med'] || item.primary)
+                      : ((state.stock[item.primary]>0) ? item.primary : item.backup);
+    isBackup = medKey===item.backup;
+  } else medKey = item.key;
+  const med = MEDICINES[medKey];
+  const outOfStock = !checked && (state.stock[medKey]||0) <= 0;
+  return { fieldKey, checked, med, isBackup, outOfStock };
+}
+
+function renderTimeline(){
+  const el=document.getElementById('timeline');
+  el.innerHTML = SCHEDULE.map(slot=>{
+    const rows = slot.items.map(item=>{
+      const d = doseDisplay(slot, item);
+      const rowClass = 'dose-row'+(d.checked?' done':'')+(d.outOfStock?' locked':'');
+      const subTag = d.isBackup ? '<span class="tag-sub">pengganti</span>' : '';
+      const outTag = d.outOfStock ? '<span class="tag-out">habis</span>' : '';
+      return '<div class="'+rowClass+'" data-slot="'+slot.id+'" data-item="'+item.key+'">'
+        + '<div class="checkbox" role="checkbox" aria-checked="'+d.checked+'" tabindex="0" aria-label="'+d.med.name+'">'+CHECK_ICON+'</div>'
+        + '<div class="dose-info"><div class="dose-name">'+d.med.name+'</div>'
+        + '<div class="dose-meta">'+d.med.dose+' · '+item.qty+' '+d.med.unit+subTag+outTag+'</div></div>'
+        + '</div>';
+    }).join('');
+    return '<div class="slot" data-accent="'+slot.accent+'">'
+      + '<div class="slot-marker">'+ICONS[slot.icon]+'</div>'
+      + '<div class="slot-heading"><span class="slot-time">'+slot.time+'</span><span class="slot-label">'+slot.label+'</span></div>'
+      + '<div class="slot-card">'+rows+'</div>'
+      + '</div>';
+  }).join('');
+
+  el.querySelectorAll('.dose-row').forEach(rowEl=>{
+    const fire=()=>{
+      const slot = SCHEDULE.find(s=>s.id===rowEl.dataset.slot);
+      const item = slot.items.find(i=>i.key===rowEl.dataset.item);
+      toggleDose(slot, item);
+    };
+    rowEl.addEventListener('click', fire);
+    const cb=rowEl.querySelector('.checkbox');
+    cb.addEventListener('keydown', e=>{
+      if(e.key===' ' || e.key==='Enter'){ e.preventDefault(); fire(); }
+    });
+  });
+}
+
+/* ---------------- rendering: Laporan page ---------------- */
+function renderStockChart(){
+  const el=document.getElementById('stockChart');
+  if(!state.stock){ el.innerHTML='<p class="chart-loading">Memuat grafik…</p>'; return; }
+  const usage=computeUsage(state.stock);
+  const keys=Object.keys(MEDICINES);
+  const rowH=28, top=6, chartW=300, trackX=104, trackW=chartW-trackX-38;
+  const height = keys.length*rowH + top*2;
+  let svg='';
+  [0,25,50,75,100].forEach(p=>{
+    const x = trackX + trackW*p/100;
+    svg += '<line x1="'+x+'" y1="0" x2="'+x+'" y2="'+height+'" stroke="'+COLORS.border+'" stroke-width="1"/>';
+  });
+  keys.forEach((k,i)=>{
+    const med=MEDICINES[k];
+    const qty=state.stock[k]||0;
+    const pct=Math.max(0,Math.min(100, qty/med.initial*100));
+    const st=stockStatus(qty, usage[k]);
+    const color = st.level==='bad'?COLORS.bad:st.level==='warn'?COLORS.warn:COLORS.ok;
+    const y = top + i*rowH;
+    const barY = y + 7;
+    const w = Math.max(trackW*pct/100, pct>0?4:0);
+    svg += '<text x="0" y="'+(barY+9.5)+'" font-size="9.3" fill="'+COLORS.ink+'">'+med.name+'</text>';
+    svg += '<rect x="'+trackX+'" y="'+barY+'" width="'+trackW+'" height="13" rx="4" fill="#eef2f0"/>';
+    svg += '<rect x="'+trackX+'" y="'+barY+'" width="'+w+'" height="13" rx="4" fill="'+color+'"/>';
+    svg += '<text x="'+(trackX+trackW+6)+'" y="'+(barY+10)+'" font-size="9.3" fill="'+COLORS.inkSoft+'">'+qty+'/'+med.initial+'</text>';
+  });
+  el.innerHTML = '<svg viewBox="0 0 '+chartW+' '+height+'" style="width:100%;height:auto;display:block;font-family:Inter,sans-serif">'+svg+'</svg>';
+}
+
+async function fetchWeekAdherence(endDateStr){
+  const [ey,em,ed] = endDateStr.split('-').map(Number);
+  const end = new Date(ey, em-1, ed);
+  const days=[];
+  for(let i=6;i>=0;i--){ const d=new Date(end); d.setDate(d.getDate()-i); days.push(toDateStr(d)); }
+  const results = await Promise.all(days.map(async ds=>{
+    let data=null;
+    if(ds===state.date && state.log){ data=state.log; }
+    else{
+      try{ const snap=await getDoc(doc(db,'medLogs',ds)); data = snap.exists()? snap.data() : null; }
+      catch(e){ data=null; }
+    }
+    if(!data) return {date:ds, pct:null};
+    let done=0;
+    SCHEDULE.forEach(slot=>slot.items.forEach(item=>{ if(data[slot.id+'_'+item.key]) done++; }));
+    return {date:ds, pct:Math.round(done/TOTAL_DOSES*100)};
+  }));
+  return results;
+}
+
+async function renderAdherenceChart(){
+  const el=document.getElementById('adherenceChart');
+  el.innerHTML='<p class="chart-loading">Memuat grafik…</p>';
+  const data = await fetchWeekAdherence(state.date);
+  const w=300, h=150, top=14, bottom=26, gap=8;
+  const chartH = h-top-bottom;
+  const barW = (w - gap*(data.length+1))/data.length;
+  let svg='';
+  [0,25,50,75,100].forEach(p=>{
+    const y = top + chartH*(1-p/100);
+    svg += '<line x1="0" y1="'+y+'" x2="'+w+'" y2="'+y+'" stroke="'+COLORS.border+'" stroke-width="1" stroke-dasharray="2,3"/>';
+  });
+  data.forEach((d,i)=>{
+    const x = gap + i*(barW+gap);
+    const [y,mn,dd] = d.date.split('-').map(Number);
+    const dow = new Date(y,mn-1,dd).getDay();
+    const label = DAYS_SHORT[dow]+' '+dd+'/'+mn;
+    if(d.pct===null){
+      svg += '<rect x="'+x+'" y="'+(top+chartH-4)+'" width="'+barW+'" height="4" rx="2" fill="'+COLORS.border+'"/>';
+    } else {
+      const bh = Math.max(chartH*d.pct/100, d.pct>0?3:0);
+      const by = top+chartH-bh;
+      const color = d.pct>=100?COLORS.ok:d.pct>0?COLORS.warn:COLORS.bad;
+      svg += '<rect x="'+x+'" y="'+by+'" width="'+barW+'" height="'+bh+'" rx="4" fill="'+color+'"/>';
+      svg += '<text x="'+(x+barW/2)+'" y="'+(by-4)+'" font-size="8" text-anchor="middle" fill="'+COLORS.ink+'">'+d.pct+'%</text>';
+    }
+    svg += '<text x="'+(x+barW/2)+'" y="'+(h-8)+'" font-size="7.5" text-anchor="middle" fill="'+COLORS.inkSoft+'">'+label+'</text>';
+  });
+  el.innerHTML = '<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:auto;display:block;font-family:Inter,sans-serif">'+svg+'</svg>';
+}
+
+function renderStatusList(){
+  const el=document.getElementById('statusList');
+  document.getElementById('statusDateLabel').textContent = humanDate(state.date);
+  if(!state.stock || !state.log){ el.innerHTML=''; return; }
+  el.innerHTML = SCHEDULE.map(slot=>{
+    const rows = slot.items.map(item=>{
+      const d=doseDisplay(slot,item);
+      const icon = d.checked ? CHECK_ICON : X_ICON;
+      const subNote = d.isBackup ? '<em>pengganti</em>' : '';
+      return '<div class="status-row '+(d.checked?'done':'pending')+'">'
+        + '<span class="status-icon">'+icon+'</span>'
+        + '<span class="status-name">'+d.med.name+' · '+d.med.dose+subNote+'</span>'
+        + '<span class="status-tag">'+(d.checked?'Diminum':'Belum')+'</span>'
+        + '</div>';
+    }).join('');
+    return '<div class="status-slot"><div class="status-slot-title">'+slot.time+' · '+slot.label+'</div>'+rows+'</div>';
+  }).join('');
+}
+
+async function renderLaporan(){
+  renderStockChart();
+  renderStatusList();
+  await renderAdherenceChart();
+}
+
+/* ---------------- print report ---------------- */
+document.getElementById('printBtn').addEventListener('click', ()=>{
+  if(!state.stock || !state.log){ toast('Data belum siap.'); return; }
+  const usage = computeUsage(state.stock);
+  document.getElementById('pDate').textContent = humanDate(state.date);
+
+  let schedRows='';
+  SCHEDULE.forEach(slot=>{
+    slot.items.forEach(item=>{
+      const d = doseDisplay(slot, item);
+      const statusTxt = d.checked ? 'Sudah diminum' : 'Belum diminum';
+      schedRows += '<tr><td>'+slot.time+' — '+slot.label+'</td><td>'+d.med.name+(d.isBackup?' (pengganti)':'')+'</td><td>'+d.med.dose+' · '+item.qty+' '+d.med.unit+'</td><td>'+statusTxt+'</td></tr>';
+    });
+  });
+  document.getElementById('pSchedule').innerHTML = schedRows;
+
+  let stockRows='';
+  Object.keys(MEDICINES).forEach(k=>{
+    const med=MEDICINES[k];
+    const qty=state.stock[k]||0;
+    const st=stockStatus(qty, usage[k]);
+    const cls = st.level==='bad'?'p-bad':st.level==='warn'?'p-warn':'p-ok';
+    stockRows += '<tr><td>'+med.name+' '+med.dose+'</td><td>'+med.initial+' '+med.unit+'</td><td>'+qty+' '+med.unit+'</td><td class="'+cls+'">'+st.label+'</td></tr>';
+  });
+  document.getElementById('pStock').innerHTML = stockRows;
+
+  window.print();
+});
+
+/* ---------------- page navigation ---------------- */
+function showPage(name){
+  currentPage=name;
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+name));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.page===name));
+  if(name==='laporan') renderLaporan();
+}
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>showPage(btn.dataset.page));
+});
+
+/* ---------------- date navigation ---------------- */
+const datePicker=document.getElementById('datePicker');
+datePicker.value=state.date;
+document.getElementById('calBtn').addEventListener('click',()=>{
+  if(datePicker.showPicker){ try{ datePicker.showPicker(); }catch(e){ datePicker.focus(); datePicker.click(); } }
+  else datePicker.focus();
+});
+datePicker.addEventListener('change',()=>{
+  if(!datePicker.value) return;
+  state.date=datePicker.value;
+  listenLog(state.date);
+  render();
+  if(currentPage==='laporan') renderLaporan();
+});
+document.getElementById('todayBtn').addEventListener('click',()=>{
+  state.date=toDateStr(new Date());
+  datePicker.value=state.date;
+  listenLog(state.date);
+  render();
+  if(currentPage==='laporan') renderLaporan();
+});
+
+/* ---------------- boot ---------------- */
+(async function init(){
+  setSync('loading');
+  ensureRestockList();
+  try{
+    await ensureStockDoc();
+    listenStock();
+    listenLog(state.date);
+    listenRestockHistory();
+  }catch(e){
+    console.error(e); setSync('err');
+    toast('Tidak dapat terhubung ke Firestore. Pastikan Firestore sudah diaktifkan di Firebase Console.');
+  }
+})();
+</script>
+</body>
+</html>
