@@ -159,7 +159,7 @@
 
   .status-slot{ margin-bottom:14px; }
   .status-slot:last-child{ margin-bottom:0; }
-  .status-slot-title{ font-size:11.5px; font-weight:700; color:var(--ink-soft); margin-bottom:6px; text-transform:none; }
+  .status-slot-title{ font-size:11.5px; font-weight:700; color:var(--ink-soft); margin-bottom:6px; }
   .status-row{ display:flex; align-items:center; gap:9px; background:var(--card); border:1px solid var(--border); padding:9px 11px; border-radius:10px; margin-bottom:6px; }
   .status-row:last-child{ margin-bottom:0; }
   .status-icon{ width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -170,6 +170,43 @@
   .status-name em{ display:block; font-style:normal; font-weight:500; color:var(--dusk); font-size:11px; }
   .status-tag{ font-size:11px; font-weight:700; color:var(--ink-soft); flex-shrink:0; }
   .status-row.done .status-tag{ color:var(--ok); }
+
+  /* ---------- pengaturan page ---------- */
+  .modal-field{ margin-bottom:12px; }
+  .modal-field:last-of-type{ margin-bottom:14px; }
+  .modal-field label{ display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:5px; }
+  .modal-field input, .modal-field select{ width:100%; font-size:14.5px; padding:10px 12px; border-radius:9px; border:1.5px solid var(--border); font-family:inherit; background:#fff; }
+  .modal-field input.big-num{ font-family:var(--serif); font-size:20px; }
+
+  .add-med-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px 14px 6px; }
+  .btn-primary-full{ width:100%; background:var(--brand); color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:700; padding:12px; cursor:pointer; margin-bottom:14px; }
+  .btn-primary-full:active{ background:var(--brand-light); }
+  .btn-outline-full{ width:100%; background:#fff; border:1.5px dashed #b7c8c2; color:var(--brand); border-radius:10px; font-size:13.5px; font-weight:700; padding:11px; cursor:pointer; margin-top:2px; }
+  .btn-outline-full:active{ background:var(--brand-bg); }
+
+  .med-manage-list{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; }
+  .med-manage-row{ display:flex; align-items:center; gap:8px; padding:11px 13px; }
+  .med-manage-row + .med-manage-row{ border-top:1px solid var(--border); }
+  .med-manage-info{ flex:1; min-width:0; }
+  .med-manage-name{ font-size:14px; font-weight:600; }
+  .med-manage-meta{ font-size:11.5px; color:var(--ink-soft); margin-top:1px; }
+  .icon-btn-sm{ background:#f0f3f1; border:none; color:var(--ink-soft); border-radius:8px; width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+  .icon-btn-sm.danger{ color:var(--bad); background:var(--bad-bg); }
+  .icon-btn-sm svg{ width:14px; height:14px; }
+
+  .slot-editor-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 13px; margin-bottom:12px; }
+  .slot-editor-head{ display:flex; align-items:center; gap:7px; margin-bottom:8px; }
+  .slot-editor-head input[type=time]{ border:1.5px solid var(--border); border-radius:8px; padding:6px 6px; font-size:12.5px; font-family:var(--serif); width:82px; flex-shrink:0; }
+  .slot-editor-head input[type=text]{ flex:1; min-width:0; border:1.5px solid var(--border); border-radius:8px; padding:6px 9px; font-size:13px; font-weight:600; }
+  .slot-editor-item{ display:flex; align-items:center; gap:8px; padding:7px 0; border-top:1px solid var(--border); }
+  .slot-editor-item:first-of-type{ border-top:none; }
+  .slot-editor-item-name{ flex:1; font-size:13px; min-width:0; }
+  .slot-editor-item-name .note{ display:block; font-size:10.5px; color:var(--dusk); font-weight:500; }
+  .slot-editor-item input[type=number]{ width:50px; border:1.5px solid var(--border); border-radius:7px; padding:5px 4px; font-size:13px; text-align:center; flex-shrink:0; }
+  .slot-editor-add{ display:flex; gap:6px; margin-top:9px; padding-top:9px; border-top:1px dashed var(--border); }
+  .slot-editor-add select{ flex:1; min-width:0; border:1.5px solid var(--border); border-radius:8px; padding:7px 6px; font-size:12px; }
+  .slot-editor-add input[type=number]{ width:44px; border:1.5px solid var(--border); border-radius:8px; padding:7px 4px; font-size:12.5px; text-align:center; flex-shrink:0; }
+  .slot-editor-add button{ background:var(--brand); color:#fff; border:none; border-radius:8px; font-size:11.5px; font-weight:700; padding:0 9px; cursor:pointer; flex-shrink:0; }
 
   /* ---------- print button ---------- */
   .print-wrap{ padding:22px 16px 6px; max-width:640px; margin:0 auto; }
@@ -185,23 +222,22 @@
   .bottom-nav{
     position:fixed; left:0; right:0; bottom:0; z-index:40;
     display:flex; background:#fff; border-top:1px solid var(--border);
-    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    padding:6px 2px calc(6px + env(safe-area-inset-bottom));
   }
   .nav-btn{
     flex:1; background:none; border:none; display:flex; flex-direction:column; align-items:center; gap:3px;
-    padding:6px 2px; color:#9aa8a2; font-size:10.5px; font-weight:600; cursor:pointer;
+    padding:6px 1px; color:#9aa8a2; font-size:10px; font-weight:600; cursor:pointer;
   }
-  .nav-btn svg{ width:20px; height:20px; }
+  .nav-btn svg{ width:19px; height:19px; }
   .nav-btn.active{ color:var(--brand); }
 
   /* ---------- modal ---------- */
   .overlay{ position:fixed; inset:0; background:rgba(15,30,27,.45); display:none; align-items:flex-end; justify-content:center; z-index:50; }
   .overlay.show{ display:flex; }
-  .modal{ background:#fff; width:100%; max-width:420px; border-radius:20px 20px 0 0; padding:20px 20px 24px; }
+  .modal{ background:#fff; width:100%; max-width:420px; max-height:88vh; overflow-y:auto; border-radius:20px 20px 0 0; padding:20px 20px 24px; }
   @media (min-width:520px){ .overlay{ align-items:center; } .modal{ border-radius:18px; } }
   .modal h3{ margin:0 0 3px; font-size:16px; }
   .modal p{ margin:0 0 14px; font-size:12.5px; color:var(--ink-soft); }
-  .modal input[type=number]{ width:100%; font-size:20px; font-family:var(--serif); padding:11px 13px; border-radius:10px; border:1.5px solid var(--border); margin-bottom:14px; }
   .modal-actions{ display:flex; gap:10px; }
   .modal-actions button{ flex:1; padding:12px; border-radius:10px; font-size:14px; font-weight:700; border:none; cursor:pointer; }
   .btn-cancel{ background:#f0f3f1; color:var(--ink); }
@@ -275,7 +311,7 @@
     <!-- ===== PAGE 3: LAPORAN ===== -->
     <section class="page" id="page-laporan">
       <div class="section">
-        <p class="section-head">Grafik stok saat ini<small>Dibandingkan dengan stok awal 5 September 2026</small></p>
+        <p class="section-head">Grafik stok saat ini<small>Dibandingkan dengan stok awal saat obat mulai dicatat</small></p>
         <div class="chart-card">
           <div id="stockChart"><p class="chart-loading">Memuat grafik…</p></div>
           <div class="chart-legend">
@@ -306,7 +342,32 @@
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           Cetak laporan harian
         </button>
-        <p class="foot-note">Stok awal dicatat 5 September 2026 · data tersinkron otomatis lewat Firebase</p>
+        <p class="foot-note">Data tersinkron otomatis lewat Firebase</p>
+      </div>
+    </section>
+
+    <!-- ===== PAGE 4: PENGATURAN ===== -->
+    <section class="page" id="page-pengaturan">
+      <div class="section">
+        <p class="section-head">Tambah jenis obat baru<small>Obat baru otomatis muncul di halaman Tambah Stok &amp; bisa dipasang ke jadwal</small></p>
+        <div class="add-med-card">
+          <div class="modal-field"><label>Nama obat</label><input type="text" id="newMedName" placeholder="mis. Amlodipine"></div>
+          <div class="modal-field"><label>Dosis</label><input type="text" id="newMedDose" placeholder="mis. 5 mg"></div>
+          <div class="modal-field"><label>Satuan</label><input type="text" id="newMedUnit" placeholder="mis. tablet, kapsul, ml"></div>
+          <div class="modal-field"><label>Stok awal</label><input type="number" inputmode="numeric" min="0" id="newMedStock" placeholder="0"></div>
+          <button class="btn-primary-full" id="addMedBtn" type="button">+ Tambah obat</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <p class="section-head">Daftar obat<small>Ketuk ikon untuk mengedit atau menghapus</small></p>
+        <div class="med-manage-list" id="medManageList"></div>
+      </div>
+
+      <div class="section">
+        <p class="section-head">Jadwal minum obat<small>Ubah jam/nama waktu, tambah atau hapus obat di tiap waktu</small></p>
+        <div id="scheduleEditor"></div>
+        <button class="btn-outline-full" id="addSlotBtn" type="button">+ Tambah waktu minum obat</button>
       </div>
     </section>
   </main>
@@ -318,19 +379,23 @@
     </button>
     <button class="nav-btn" data-page="stok">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
-      <span>Tambah Stok</span>
+      <span>Stok</span>
     </button>
     <button class="nav-btn" data-page="laporan">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V12M10 20V6M16 20v-8M4 20h16"/></svg>
       <span>Laporan</span>
     </button>
+    <button class="nav-btn" data-page="pengaturan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><circle cx="12" cy="12" r="7.6" stroke-dasharray="2.1 2.5"/></svg>
+      <span>Atur</span>
+    </button>
   </nav>
 
   <div class="overlay" id="overlay">
     <div class="modal">
-      <h3 id="modalTitle">Koreksi stok</h3>
-      <p id="modalSub">Masukkan jumlah stok saat ini.</p>
-      <input type="number" inputmode="numeric" min="0" id="modalInput">
+      <h3 id="modalTitle">Judul</h3>
+      <p id="modalSub">Keterangan</p>
+      <div id="modalBody"></div>
       <div class="modal-actions">
         <button class="btn-cancel" id="modalCancel">Batal</button>
         <button class="btn-save" id="modalSave">Simpan</button>
@@ -350,56 +415,46 @@
     </table>
     <div class="p-section-title">Ringkasan stok</div>
     <table>
-      <thead><tr><th>Obat</th><th>Stok awal 5 Sep 2026</th><th>Stok saat ini</th><th>Estimasi habis</th></tr></thead>
+      <thead><tr><th>Obat</th><th>Stok awal</th><th>Stok saat ini</th><th>Estimasi habis</th></tr></thead>
       <tbody id="pStock"></tbody>
     </table>
   </div>
 
-<script type="module">
+  <!-- firebase-config.js mengisi window.FIREBASE_CONFIG. Jangan commit file itu ke Git/repo publik. -->
+  <script src="firebase-config.js"></script>
+  <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, increment,
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteField, onSnapshot, increment,
   collection, addDoc, serverTimestamp, query, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA5VeYSTXmBpceDwbqIddooSdaIB9maDg8",
-  authDomain: "iuran-db.firebaseapp.com",
-  projectId: "iuran-db",
-  storageBucket: "iuran-db.firebasestorage.app",
-  messagingSenderId: "380835597026",
-  appId: "1:380835597026:web:402b8d837243c3e2dbecbb"
-};
+const firebaseConfig = window.FIREBASE_CONFIG;
+if(!firebaseConfig){
+  document.body.innerHTML = '<div style="padding:28px;font-family:system-ui,sans-serif;line-height:1.5;color:#142523">'
+    + '<h2 style="margin:0 0 8px">Konfigurasi Firebase tidak ditemukan</h2>'
+    + '<p>File <code>firebase-config.js</code> belum ada di folder yang sama dengan halaman ini, atau belum berisi <code>window.FIREBASE_CONFIG</code>.</p>'
+    + '<p>Salin <code>firebase-config.example.js</code> menjadi <code>firebase-config.js</code>, isi dengan config project Firebase Anda, lalu muat ulang halaman.</p>'
+    + '</div>';
+  throw new Error('Missing window.FIREBASE_CONFIG — buat file firebase-config.js');
+}
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* ---------------- data model ---------------- */
-const MEDICINES = {
-  paracetamol:    { name:'Paracetamol',   dose:'500 mg',  unit:'tablet', initial:9  },
-  astika:         { name:'Astika',        dose:'100 mg',  unit:'tablet', initial:4  },
-  digoxin:        { name:'Digoxin',       dose:'0.25 mg', unit:'tablet', initial:5  },
-  atorvastatin:   { name:'Atorvastatin',  dose:'20 mg',   unit:'tablet', initial:14 },
-  furosemide:     { name:'Furosemide',    dose:'40 mg',   unit:'tablet', initial:5  },
-  cefixime:       { name:'Cefixime',      dose:'100 mg',  unit:'kapsul', initial:9  },
-  citicoline:     { name:'Citicoline',    dose:'500 mg',  unit:'tablet', initial:9  },
-  spironolactone: { name:'Spironolacton', dose:'25 mg',   unit:'tablet', initial:4  },
-  lansoprazole:   { name:'Lansoptazole',  dose:'30 mg',   unit:'kapsul', initial:15 },
-  clopidogrel:    { name:'Clopidogrel',   dose:'75 mg',   unit:'tablet', initial:30 },
+/* ---------------- default data (only used to seed Firestore the first time) ---------------- */
+const DEFAULT_MEDICINES = {
+  paracetamol:    { name:'Paracetamol',   dose:'500 mg',  unit:'tablet', initialStock:9  },
+  astika:         { name:'Astika',        dose:'100 mg',  unit:'tablet', initialStock:4  },
+  digoxin:        { name:'Digoxin',       dose:'0.25 mg', unit:'tablet', initialStock:5  },
+  atorvastatin:   { name:'Atorvastatin',  dose:'20 mg',   unit:'tablet', initialStock:14 },
+  furosemide:     { name:'Furosemide',    dose:'40 mg',   unit:'tablet', initialStock:5  },
+  cefixime:       { name:'Cefixime',      dose:'100 mg',  unit:'kapsul', initialStock:9  },
+  citicoline:     { name:'Citicoline',    dose:'500 mg',  unit:'tablet', initialStock:9  },
+  spironolactone: { name:'Spironolacton', dose:'25 mg',   unit:'tablet', initialStock:4  },
+  lansoprazole:   { name:'Lansoptazole',  dose:'30 mg',   unit:'kapsul', initialStock:15 },
+  clopidogrel:    { name:'Clopidogrel',   dose:'75 mg',   unit:'tablet', initialStock:30 },
 };
-
-const COLORS = { ok:'#1d8a5f', warn:'#b8790f', bad:'#c6483d', border:'#e3ebe7', ink:'#142523', inkSoft:'#5b6b67' };
-
-const ICONS = {
-  sunrise:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 18h16"/><path d="M7 18a5 5 0 0 1 10 0"/><path d="M12 8v3"/><path d="M8.5 9.5 10 11"/><path d="M15.5 9.5 14 11"/></svg>',
-  sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 3v2.3M12 18.7V21M4.2 12H2M22 12h-2.2M5.6 5.6l1.5 1.5M16.9 16.9l1.5 1.5M5.6 18.4l1.5-1.5M16.9 7.1l1.5-1.5"/></svg>',
-  sunset:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 18h16"/><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 6v4"/><path d="m9 8 1.5 1.5"/><path d="m15 8-1.5 1.5"/></svg>',
-  moon:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.2 14.2c-.5 3.9-3.9 6.9-7.9 6.9-4.4 0-8-3.6-8-8 0-4 3-7.3 6.9-7.9.5-.1.9.4.6.8-.7 1.1-1.1 2.4-1.1 3.7 0 3.9 3.2 7.1 7.1 7.1 1.3 0 2.6-.4 3.7-1.1.4-.3.9.1.7.5Z"/></svg>',
-};
-const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-const X_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-const EDIT_ICON = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
-
-const SCHEDULE = [
+const DEFAULT_SCHEDULE = [
   { id:'pagi1', time:'06:00', label:'Pagi · 2 jam sebelum makan', icon:'sunrise', accent:'dawn',
     items:[ {key:'lansoprazole', qty:1} ] },
   { id:'pagi2', time:'07:30', label:'Pagi · sesudah makan', icon:'sun', accent:'dawn',
@@ -415,31 +470,66 @@ const SCHEDULE = [
   { id:'malam', time:'20:00', label:'Malam · sesudah makan', icon:'moon', accent:'night',
     items:[ {key:'spironolactone', qty:1}, {key:'atorvastatin', qty:1} ] },
 ];
-const TOTAL_DOSES = SCHEDULE.reduce((s,slot)=>s+slot.items.length,0);
+
+const COLORS = { ok:'#1d8a5f', warn:'#b8790f', bad:'#c6483d', border:'#e3ebe7', ink:'#142523', inkSoft:'#5b6b67' };
+
+const ICONS = {
+  sunrise:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 18h16"/><path d="M7 18a5 5 0 0 1 10 0"/><path d="M12 8v3"/><path d="M8.5 9.5 10 11"/><path d="M15.5 9.5 14 11"/></svg>',
+  sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 3v2.3M12 18.7V21M4.2 12H2M22 12h-2.2M5.6 5.6l1.5 1.5M16.9 16.9l1.5 1.5M5.6 18.4l1.5-1.5M16.9 7.1l1.5-1.5"/></svg>',
+  sunset:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 18h16"/><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 6v4"/><path d="m9 8 1.5 1.5"/><path d="m15 8-1.5 1.5"/></svg>',
+  moon:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.2 14.2c-.5 3.9-3.9 6.9-7.9 6.9-4.4 0-8-3.6-8-8 0-4 3-7.3 6.9-7.9.5-.1.9.4.6.8-.7 1.1-1.1 2.4-1.1 3.7 0 3.9 3.2 7.1 7.1 7.1 1.3 0 2.6-.4 3.7-1.1.4-.3.9.1.7.5Z"/></svg>',
+};
+const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+const X_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+const EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+const TRASH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
 const DAYS_SHORT=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+const DAYS=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
 /* ---------------- state ---------------- */
-const state = { stock:null, log:null, date: toDateStr(new Date()) };
+const state = { stock:null, log:null, medDefs:null, schedule:null, date: toDateStr(new Date()) };
 let unsubLog = null;
 let currentPage = 'jadwal';
-let restockListBuilt = false;
+let restockKeysSig = '';
 
 /* ---------------- helpers ---------------- */
 function toDateStr(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
-const DAYS=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 function humanDate(dateStr){
   const [y,m,d]=dateStr.split('-').map(Number);
   const dt=new Date(y,m-1,d);
   return DAYS[dt.getDay()]+', '+d+' '+MONTHS[m-1]+' '+y;
 }
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function slugify(name){
+  let base=String(name).toLowerCase().trim().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+  return base || 'obat';
+}
+function uniqueKey(base, existingKeys){
+  let key=base, i=1;
+  while(existingKeys.includes(key)){ i++; key=base+'_'+i; }
+  return key;
+}
+function iconForTime(hhmm){
+  const h=parseInt((hhmm||'12:00').split(':')[0],10);
+  if(isNaN(h)) return {icon:'sun', accent:'dawn'};
+  if(h>=4 && h<11) return {icon:'sunrise', accent:'dawn'};
+  if(h>=11 && h<15) return {icon:'sun', accent:'dawn'};
+  if(h>=15 && h<19) return {icon:'sunset', accent:'dusk'};
+  return {icon:'moon', accent:'night'};
+}
+function totalDoses(){
+  return (state.schedule||[]).reduce((s,slot)=>s+slot.items.length,0);
+}
 function toast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
   clearTimeout(toast._t);
-  toast._t=setTimeout(()=>t.classList.remove('show'),2400);
+  toast._t=setTimeout(()=>t.classList.remove('show'),2600);
 }
 function setSync(mode){
   const dot=document.getElementById('syncDot'), label=document.getElementById('syncLabel');
@@ -448,12 +538,12 @@ function setSync(mode){
 }
 
 function computeUsage(stock){
-  const usage={}; for(const k in MEDICINES) usage[k]=0;
-  SCHEDULE.forEach(slot=>slot.items.forEach(item=>{
+  const usage={}; for(const k in state.medDefs) usage[k]=0;
+  state.schedule.forEach(slot=>slot.items.forEach(item=>{
     if(item.substitute){
       const useKey = (stock && stock[item.primary]>0) ? item.primary : item.backup;
-      usage[useKey]+=item.qty;
-    } else usage[item.key]+=item.qty;
+      if(useKey in usage) usage[useKey]+=item.qty;
+    } else if(item.key in usage) usage[item.key]+=item.qty;
   }));
   return usage;
 }
@@ -467,37 +557,53 @@ function stockStatus(qty, use){
 }
 
 /* ---------------- firestore init ---------------- */
-async function ensureStockDoc(){
+async function ensureStock(){
   const ref=doc(db,'medStock','current');
   const snap=await getDoc(ref);
   if(!snap.exists()){
     const initial={};
-    for(const k in MEDICINES) initial[k]=MEDICINES[k].initial;
+    for(const k in DEFAULT_MEDICINES) initial[k]=DEFAULT_MEDICINES[k].initialStock;
     initial._initializedAt='2026-09-05';
     await setDoc(ref, initial);
   }
 }
+async function ensureMedDefs(){
+  const ref=doc(db,'medDefs','current');
+  const snap=await getDoc(ref);
+  if(!snap.exists()){
+    const initial={};
+    for(const k in DEFAULT_MEDICINES) initial[k]={...DEFAULT_MEDICINES[k], initialDate:'2026-09-05'};
+    await setDoc(ref, initial);
+  }
+}
+async function ensureSchedule(){
+  const ref=doc(db,'schedule','current');
+  const snap=await getDoc(ref);
+  if(!snap.exists()) await setDoc(ref, { slots: DEFAULT_SCHEDULE });
+}
 function listenStock(){
-  const ref=doc(db,'medStock','current');
-  onSnapshot(ref, snap=>{
-    state.stock = snap.exists() ? snap.data() : {};
-    render();
-  }, err=>{ console.error(err); setSync('err'); toast('Gagal memuat data stok. Periksa Firestore & aturan keamanan.'); });
+  onSnapshot(doc(db,'medStock','current'), snap=>{ state.stock = snap.exists()?snap.data():{}; render(); },
+    err=>{ console.error(err); setSync('err'); toast('Gagal memuat data stok. Periksa Firestore & aturan keamanan.'); });
+}
+function listenMedDefs(){
+  onSnapshot(doc(db,'medDefs','current'), snap=>{ state.medDefs = snap.exists()?snap.data():{}; render(); },
+    err=>{ console.error(err); setSync('err'); toast('Gagal memuat daftar obat.'); });
+}
+function listenSchedule(){
+  onSnapshot(doc(db,'schedule','current'), snap=>{ state.schedule = snap.exists()?(snap.data().slots||[]):[]; render(); },
+    err=>{ console.error(err); setSync('err'); toast('Gagal memuat jadwal.'); });
 }
 function listenLog(dateStr){
   if(unsubLog) unsubLog();
   state.log=null;
   const ref=doc(db,'medLogs',dateStr);
-  unsubLog=onSnapshot(ref, snap=>{
-    state.log = snap.exists() ? snap.data() : {};
-    render();
-  }, err=>{ console.error(err); setSync('err'); toast('Gagal memuat jadwal harian.'); });
+  unsubLog=onSnapshot(ref, snap=>{ state.log = snap.exists()?snap.data():{}; render(); },
+    err=>{ console.error(err); setSync('err'); toast('Gagal memuat jadwal harian.'); });
 }
 function listenRestockHistory(){
   const q = query(collection(db,'restockLog'), orderBy('ts','desc'), limit(20));
   onSnapshot(q, snap=>{
-    const rows=[];
-    snap.forEach(d=>rows.push(d.data()));
+    const rows=[]; snap.forEach(d=>rows.push(d.data()));
     renderRestockHistory(rows);
   }, err=>{ console.error(err); document.getElementById('restockHistory').innerHTML='<p class="empty-note">Gagal memuat riwayat.</p>'; });
 }
@@ -515,7 +621,7 @@ async function toggleDose(slot, item){
     if(newChecked){
       medKeyUsed = (state.stock[item.primary]>0) ? item.primary : item.backup;
       if((state.stock[medKeyUsed]||0) <= 0){
-        toast('Stok '+MEDICINES[item.primary].name+' dan '+MEDICINES[item.backup].name+' sama-sama habis.');
+        toast('Stok '+state.medDefs[item.primary].name+' dan '+state.medDefs[item.backup].name+' sama-sama habis.');
         return;
       }
     } else {
@@ -524,7 +630,7 @@ async function toggleDose(slot, item){
   } else {
     medKeyUsed = item.key;
     if(newChecked && (state.stock[medKeyUsed]||0) <= 0){
-      toast('Stok '+MEDICINES[medKeyUsed].name+' habis, tidak bisa dicatat.');
+      toast('Stok '+(state.medDefs[medKeyUsed]?state.medDefs[medKeyUsed].name:medKeyUsed)+' habis, tidak bisa dicatat.');
       return;
     }
   }
@@ -543,27 +649,209 @@ async function toggleDose(slot, item){
   }
 }
 
-/* ---------------- stock correction modal ---------------- */
+/* ---------------- generic modal ---------------- */
+function closeModal(){ document.getElementById('overlay').classList.remove('show'); }
+document.getElementById('modalCancel').onclick=closeModal;
+document.getElementById('overlay').addEventListener('click',e=>{ if(e.target.id==='overlay') closeModal(); });
+
 function openStockModal(key){
-  const med=MEDICINES[key];
+  const med=state.medDefs[key];
   document.getElementById('modalTitle').textContent='Koreksi stok — '+med.name;
   document.getElementById('modalSub').textContent='Dosis '+med.dose+' · satuan '+med.unit+'. Gunakan ini untuk mengoreksi jumlah persis (bukan menambah).';
-  const input=document.getElementById('modalInput');
-  input.value = state.stock ? (state.stock[key]||0) : 0;
+  document.getElementById('modalBody').innerHTML =
+    '<div class="modal-field"><label>Jumlah stok saat ini</label><input type="number" inputmode="numeric" min="0" id="mfStock" class="big-num" value="'+(state.stock[key]||0)+'"></div>';
   document.getElementById('overlay').classList.add('show');
   document.getElementById('modalSave').onclick=async()=>{
-    const val=parseInt(input.value,10);
+    const val=parseInt(document.getElementById('mfStock').value,10);
     if(isNaN(val) || val<0){ toast('Masukkan angka yang valid.'); return; }
     setSync('busy');
     try{
       await setDoc(doc(db,'medStock','current'), { [key]: val }, { merge:true });
       setSync('ok'); toast('Stok '+med.name+' diperbarui.');
     }catch(e){ console.error(e); setSync('err'); toast('Gagal menyimpan koreksi stok.'); }
-    document.getElementById('overlay').classList.remove('show');
+    closeModal();
   };
 }
-document.getElementById('modalCancel').onclick=()=>document.getElementById('overlay').classList.remove('show');
-document.getElementById('overlay').addEventListener('click',e=>{ if(e.target.id==='overlay') e.currentTarget.classList.remove('show'); });
+
+function openEditMedModal(key){
+  const med=state.medDefs[key];
+  document.getElementById('modalTitle').textContent='Edit obat';
+  document.getElementById('modalSub').textContent='Nama/dosis/satuan lama tetap tersimpan di riwayat sebelumnya.';
+  document.getElementById('modalBody').innerHTML =
+    '<div class="modal-field"><label>Nama obat</label><input type="text" id="mfName" value="'+escapeHtml(med.name)+'"></div>'
+    + '<div class="modal-field"><label>Dosis</label><input type="text" id="mfDose" value="'+escapeHtml(med.dose)+'" placeholder="mis. 500 mg"></div>'
+    + '<div class="modal-field"><label>Satuan</label><input type="text" id="mfUnit" value="'+escapeHtml(med.unit)+'" placeholder="mis. tablet, kapsul, ml"></div>';
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('modalSave').onclick=async()=>{
+    const name=document.getElementById('mfName').value.trim();
+    const dose=document.getElementById('mfDose').value.trim();
+    const unit=document.getElementById('mfUnit').value.trim();
+    if(!name){ toast('Nama obat tidak boleh kosong.'); return; }
+    setSync('busy');
+    try{
+      await setDoc(doc(db,'medDefs','current'), { [key]: { ...med, name, dose, unit } }, { merge:true });
+      setSync('ok'); toast('Data '+name+' diperbarui.');
+    }catch(e){ console.error(e); setSync('err'); toast('Gagal menyimpan.'); }
+    closeModal();
+  };
+}
+
+/* ---------------- add / edit / delete medicine (Pengaturan page) ---------------- */
+async function addMedicine(){
+  const name=document.getElementById('newMedName').value.trim();
+  const dose=document.getElementById('newMedDose').value.trim();
+  const unit=document.getElementById('newMedUnit').value.trim() || 'tablet';
+  const stock=parseInt(document.getElementById('newMedStock').value,10) || 0;
+  if(!name){ toast('Nama obat wajib diisi.'); return; }
+  const key=uniqueKey(slugify(name), Object.keys(state.medDefs||{}));
+  setSync('busy');
+  try{
+    await setDoc(doc(db,'medDefs','current'), { [key]: { name, dose, unit, initialStock:stock, initialDate: toDateStr(new Date()) } }, { merge:true });
+    await setDoc(doc(db,'medStock','current'), { [key]: stock }, { merge:true });
+    if(stock>0){
+      await addDoc(collection(db,'restockLog'), { medKey:key, medName:name, unit, qty:stock, date: toDateStr(new Date()), ts: serverTimestamp(), note:'Obat baru ditambahkan' });
+    }
+    setSync('ok'); toast('Obat '+name+' ditambahkan.');
+    document.getElementById('newMedName').value='';
+    document.getElementById('newMedDose').value='';
+    document.getElementById('newMedUnit').value='';
+    document.getElementById('newMedStock').value='';
+    renderMedList();
+  }catch(e){ console.error(e); setSync('err'); toast('Gagal menambah obat.'); }
+}
+document.getElementById('addMedBtn').addEventListener('click', addMedicine);
+
+async function deleteMedicine(key){
+  const med=state.medDefs[key];
+  const usedIn = state.schedule.some(slot=>slot.items.some(it=> it.key===key || it.primary===key || it.backup===key));
+  if(usedIn){ toast('Hapus dulu "'+med.name+'" dari jadwal sebelum menghapus obat ini.'); return; }
+  if(!confirm('Hapus "'+med.name+'" dari daftar obat? Riwayat lama tetap tersimpan.')) return;
+  setSync('busy');
+  try{
+    await updateDoc(doc(db,'medDefs','current'), { [key]: deleteField() });
+    await updateDoc(doc(db,'medStock','current'), { [key]: deleteField() });
+    setSync('ok'); toast('Obat '+med.name+' dihapus.');
+    renderMedList();
+  }catch(e){ console.error(e); setSync('err'); toast('Gagal menghapus.'); }
+}
+
+function renderMedList(){
+  const el=document.getElementById('medManageList');
+  if(!state.medDefs){ el.innerHTML='<p class="empty-note">Memuat…</p>'; return; }
+  const keys=Object.keys(state.medDefs);
+  if(!keys.length){ el.innerHTML='<p class="empty-note">Belum ada obat.</p>'; return; }
+  el.innerHTML = keys.map(k=>{
+    const med=state.medDefs[k];
+    return '<div class="med-manage-row" data-key="'+k+'">'
+      + '<div class="med-manage-info"><div class="med-manage-name">'+escapeHtml(med.name)+'</div>'
+      + '<div class="med-manage-meta">'+escapeHtml(med.dose)+' · '+escapeHtml(med.unit)+'</div></div>'
+      + '<button class="icon-btn-sm edit-med" aria-label="Edit obat">'+EDIT_ICON+'</button>'
+      + '<button class="icon-btn-sm danger del-med" aria-label="Hapus obat">'+TRASH_ICON+'</button>'
+      + '</div>';
+  }).join('');
+  el.querySelectorAll('.edit-med').forEach(btn=>btn.addEventListener('click', ()=>openEditMedModal(btn.closest('.med-manage-row').dataset.key)));
+  el.querySelectorAll('.del-med').forEach(btn=>btn.addEventListener('click', ()=>deleteMedicine(btn.closest('.med-manage-row').dataset.key)));
+}
+
+/* ---------------- schedule editor (Pengaturan page) ---------------- */
+async function persistSchedule(){
+  setSync('busy');
+  try{ await setDoc(doc(db,'schedule','current'), { slots: state.schedule }); setSync('ok'); }
+  catch(e){ console.error(e); setSync('err'); toast('Gagal menyimpan jadwal.'); }
+}
+function updateSlot(slotId, mutateFn){
+  const slot = state.schedule.find(s=>s.id===slotId);
+  if(slot) mutateFn(slot);
+  renderScheduleEditor();
+  persistSchedule();
+}
+function renderScheduleEditor(){
+  const el=document.getElementById('scheduleEditor');
+  if(!state.schedule || !state.medDefs){ el.innerHTML='<p class="empty-note">Memuat…</p>'; return; }
+  if(!state.schedule.length){ el.innerHTML='<p class="empty-note">Belum ada jadwal. Tambahkan waktu baru di bawah.</p>'; return; }
+  const medOptions = Object.keys(state.medDefs).map(k=>'<option value="'+k+'">'+escapeHtml(state.medDefs[k].name)+'</option>').join('');
+
+  el.innerHTML = state.schedule.map(slot=>{
+    const items = slot.items.map((item,idx)=>{
+      let name, note='';
+      if(item.substitute){
+        const primMed=state.medDefs[item.primary], backMed=state.medDefs[item.backup];
+        name = primMed?primMed.name:item.primary;
+        note = '<span class="note">Otomatis diganti '+escapeHtml(backMed?backMed.name:item.backup)+' kalau stok habis</span>';
+      } else {
+        const med=state.medDefs[item.key];
+        name = med?med.name:'(obat sudah dihapus)';
+      }
+      return '<div class="slot-editor-item" data-idx="'+idx+'">'
+        + '<span class="slot-editor-item-name">'+escapeHtml(name)+note+'</span>'
+        + '<input type="number" min="1" class="item-qty" value="'+item.qty+'">'
+        + '<button class="icon-btn-sm danger remove-item" aria-label="Hapus obat dari slot ini">'+TRASH_ICON+'</button>'
+        + '</div>';
+    }).join('');
+    return '<div class="slot-editor-card" data-slot="'+slot.id+'">'
+      + '<div class="slot-editor-head">'
+      + '<input type="time" class="slot-time" value="'+slot.time+'">'
+      + '<input type="text" class="slot-label" value="'+escapeHtml(slot.label)+'">'
+      + '<button class="icon-btn-sm danger remove-slot" aria-label="Hapus waktu ini">'+TRASH_ICON+'</button>'
+      + '</div>'
+      + items
+      + '<div class="slot-editor-add">'
+      + '<select class="add-item-select">'+medOptions+'</select>'
+      + '<input type="number" min="1" value="1" class="add-item-qty">'
+      + '<button type="button" class="add-item-btn">+ Tambah</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  el.querySelectorAll('.slot-editor-card').forEach(card=>{
+    const slotId=card.dataset.slot;
+    card.querySelector('.slot-time').addEventListener('change', e=>{
+      updateSlot(slotId, s=>{ s.time=e.target.value; const ic=iconForTime(s.time); s.icon=ic.icon; s.accent=ic.accent; });
+    });
+    card.querySelector('.slot-label').addEventListener('change', e=>{
+      const v=e.target.value.trim();
+      updateSlot(slotId, s=>{ if(v) s.label=v; });
+    });
+    card.querySelector('.remove-slot').addEventListener('click', ()=>{
+      const label=card.querySelector('.slot-label').value;
+      if(!confirm('Hapus waktu "'+label+'" beserta semua obat di dalamnya?')) return;
+      state.schedule = state.schedule.filter(s=>s.id!==slotId);
+      renderScheduleEditor();
+      persistSchedule();
+    });
+    card.querySelectorAll('.remove-item').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const idx=parseInt(btn.closest('.slot-editor-item').dataset.idx,10);
+        updateSlot(slotId, s=>{ s.items.splice(idx,1); });
+      });
+    });
+    card.querySelectorAll('.item-qty').forEach((input,i)=>{
+      input.addEventListener('change', ()=>{
+        const val=Math.max(1, parseInt(input.value,10)||1);
+        updateSlot(slotId, s=>{ if(s.items[i]) s.items[i].qty=val; });
+      });
+    });
+    card.querySelector('.add-item-btn').addEventListener('click', ()=>{
+      const sel=card.querySelector('.add-item-select');
+      const qtyInput=card.querySelector('.add-item-qty');
+      const key=sel.value;
+      const qty=Math.max(1, parseInt(qtyInput.value,10)||1);
+      if(!key) return;
+      updateSlot(slotId, s=>{
+        const existing=s.items.find(it=>!it.substitute && it.key===key);
+        if(existing) existing.qty += qty; else s.items.push({key, qty});
+      });
+    });
+  });
+}
+document.getElementById('addSlotBtn').addEventListener('click', ()=>{
+  const id='slot'+Math.random().toString(36).slice(2,8);
+  const time='12:00';
+  const ic=iconForTime(time);
+  state.schedule.push({ id, time, label:'Waktu baru', icon:ic.icon, accent:ic.accent, items:[] });
+  renderScheduleEditor();
+  persistSchedule();
+});
 
 /* ---------------- add stock (Tambah Stok page) ---------------- */
 async function addStock(key, qty){
@@ -571,22 +859,26 @@ async function addStock(key, qty){
   try{
     await updateDoc(doc(db,'medStock','current'), { [key]: increment(qty) });
     await addDoc(collection(db,'restockLog'), {
-      medKey:key, medName:MEDICINES[key].name, unit:MEDICINES[key].unit, qty,
+      medKey:key, medName:state.medDefs[key].name, unit:state.medDefs[key].unit, qty,
       date: toDateStr(new Date()), ts: serverTimestamp()
     });
     setSync('ok');
-    toast('Stok '+MEDICINES[key].name+' +'+qty+' ditambahkan.');
+    toast('Stok '+state.medDefs[key].name+' +'+qty+' ditambahkan.');
   }catch(e){ console.error(e); setSync('err'); toast('Gagal menambah stok.'); }
 }
 function ensureRestockList(){
-  if(restockListBuilt) return;
+  const keys=Object.keys(state.medDefs||{});
+  const sig=keys.slice().sort().join(',');
+  if(sig===restockKeysSig) return;
+  restockKeysSig=sig;
   const el=document.getElementById('restockList');
-  el.innerHTML = Object.keys(MEDICINES).map(k=>{
-    const med=MEDICINES[k];
+  if(!keys.length){ el.innerHTML='<p class="empty-note">Belum ada obat. Tambahkan lewat halaman Atur.</p>'; return; }
+  el.innerHTML = keys.map(k=>{
+    const med=state.medDefs[k];
     return '<div class="restock-row" data-key="'+k+'">'
-      + '<div class="restock-top"><div class="restock-name">'+med.name+' <span class="muted">'+med.dose+'</span></div>'
-      + '<button class="edit-icon" data-key="'+k+'" aria-label="Koreksi stok manual">'+EDIT_ICON+'</button></div>'
-      + '<div class="restock-current">Stok saat ini: <b id="cur-'+k+'">–</b> '+med.unit+'</div>'
+      + '<div class="restock-top"><div class="restock-name">'+escapeHtml(med.name)+' <span class="muted">'+escapeHtml(med.dose)+'</span></div>'
+      + '<button class="edit-icon" aria-label="Koreksi stok manual">'+EDIT_ICON+'</button></div>'
+      + '<div class="restock-current">Stok saat ini: <b id="cur-'+k+'">–</b> '+escapeHtml(med.unit)+'</div>'
       + '<div class="restock-actions">'
       + '<input type="number" inputmode="numeric" min="1" class="restock-input" placeholder="Jumlah">'
       + '<button class="restock-add" type="button">+ Tambah</button>'
@@ -603,11 +895,11 @@ function ensureRestockList(){
     });
     row.querySelector('.edit-icon').addEventListener('click', ()=>openStockModal(key));
   });
-  restockListBuilt=true;
+  updateRestockNumbers();
 }
 function updateRestockNumbers(){
-  if(!state.stock) return;
-  Object.keys(MEDICINES).forEach(k=>{
+  if(!state.stock || !state.medDefs) return;
+  Object.keys(state.medDefs).forEach(k=>{
     const el=document.getElementById('cur-'+k);
     if(el) el.textContent = state.stock[k]||0;
   });
@@ -616,25 +908,26 @@ function renderRestockHistory(rows){
   const el=document.getElementById('restockHistory');
   if(!rows.length){ el.innerHTML='<p class="empty-note">Belum ada riwayat penambahan stok.</p>'; return; }
   el.innerHTML = rows.map(r=>{
-    let when = r.date || '';
-    if(r.ts && typeof r.ts.toDate === 'function'){
+    let when=r.date||'';
+    if(r.ts && typeof r.ts.toDate==='function'){
       const dt=r.ts.toDate();
-      when = String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+' · '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+      when=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+' · '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
     }
-    return '<div class="restock-hist-row"><div><div class="restock-hist-name">'+(r.medName||'')+'</div>'
-      + '<div class="restock-hist-meta">'+when+'</div></div>'
-      + '<div class="restock-hist-qty">+'+r.qty+' '+(r.unit||'')+'</div></div>';
+    return '<div class="restock-hist-row"><div><div class="restock-hist-name">'+escapeHtml(r.medName||'')+'</div>'
+      + '<div class="restock-hist-meta">'+escapeHtml(when)+'</div></div>'
+      + '<div class="restock-hist-qty">+'+r.qty+' '+escapeHtml(r.unit||'')+'</div></div>';
   }).join('');
 }
 
 /* ---------------- rendering: Jadwal page ---------------- */
 function render(){
   document.getElementById('dateLabel').textContent = humanDate(state.date);
-  if(!state.stock || !state.log){ setSync('loading'); return; }
+  if(!state.stock || !state.log || !state.medDefs || !state.schedule){ setSync('loading'); return; }
 
   const usage = computeUsage(state.stock);
   renderAlerts(usage);
   renderTimeline();
+  ensureRestockList();
   updateRestockNumbers();
   if(currentPage==='laporan'){ renderStockChart(); renderStatusList(); }
 }
@@ -642,15 +935,15 @@ function render(){
 function renderAlerts(usage){
   const box=document.getElementById('alertBox');
   const bad=[], warn=[];
-  for(const k in MEDICINES){
+  for(const k in state.medDefs){
     const qty=state.stock[k]||0;
     const st=stockStatus(qty, usage[k]);
-    if(st.level==='bad') bad.push(MEDICINES[k].name);
-    else if(st.level==='warn') warn.push(MEDICINES[k].name);
+    if(st.level==='bad') bad.push(state.medDefs[k].name);
+    else if(st.level==='warn') warn.push(state.medDefs[k].name);
   }
   let html='';
-  if(bad.length) html += '<div class="alert bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span><b>Segera isi ulang:</b> '+bad.join(', ')+'.</span></div>';
-  if(warn.length) html += '<div class="alert warn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span><b>Stok menipis:</b> '+warn.join(', ')+'.</span></div>';
+  if(bad.length) html += '<div class="alert bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span><b>Segera isi ulang:</b> '+escapeHtml(bad.join(', '))+'.</span></div>';
+  if(warn.length) html += '<div class="alert warn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span><b>Stok menipis:</b> '+escapeHtml(warn.join(', '))+'.</span></div>';
   box.innerHTML=html;
   box.classList.toggle('show', !!html);
 }
@@ -664,35 +957,36 @@ function doseDisplay(slot, item){
                       : ((state.stock[item.primary]>0) ? item.primary : item.backup);
     isBackup = medKey===item.backup;
   } else medKey = item.key;
-  const med = MEDICINES[medKey];
+  const med = state.medDefs[medKey] || { name:'(obat tidak ditemukan)', dose:'', unit:'' };
   const outOfStock = !checked && (state.stock[medKey]||0) <= 0;
   return { fieldKey, checked, med, isBackup, outOfStock };
 }
 
 function renderTimeline(){
   const el=document.getElementById('timeline');
-  el.innerHTML = SCHEDULE.map(slot=>{
+  if(!state.schedule.length){ el.innerHTML='<p class="empty-note">Belum ada jadwal. Atur di halaman "Atur".</p>'; return; }
+  el.innerHTML = state.schedule.map(slot=>{
     const rows = slot.items.map(item=>{
       const d = doseDisplay(slot, item);
       const rowClass = 'dose-row'+(d.checked?' done':'')+(d.outOfStock?' locked':'');
       const subTag = d.isBackup ? '<span class="tag-sub">pengganti</span>' : '';
       const outTag = d.outOfStock ? '<span class="tag-out">habis</span>' : '';
       return '<div class="'+rowClass+'" data-slot="'+slot.id+'" data-item="'+item.key+'">'
-        + '<div class="checkbox" role="checkbox" aria-checked="'+d.checked+'" tabindex="0" aria-label="'+d.med.name+'">'+CHECK_ICON+'</div>'
-        + '<div class="dose-info"><div class="dose-name">'+d.med.name+'</div>'
-        + '<div class="dose-meta">'+d.med.dose+' · '+item.qty+' '+d.med.unit+subTag+outTag+'</div></div>'
+        + '<div class="checkbox" role="checkbox" aria-checked="'+d.checked+'" tabindex="0" aria-label="'+escapeHtml(d.med.name)+'">'+CHECK_ICON+'</div>'
+        + '<div class="dose-info"><div class="dose-name">'+escapeHtml(d.med.name)+'</div>'
+        + '<div class="dose-meta">'+escapeHtml(d.med.dose)+' · '+item.qty+' '+escapeHtml(d.med.unit)+subTag+outTag+'</div></div>'
         + '</div>';
     }).join('');
     return '<div class="slot" data-accent="'+slot.accent+'">'
-      + '<div class="slot-marker">'+ICONS[slot.icon]+'</div>'
-      + '<div class="slot-heading"><span class="slot-time">'+slot.time+'</span><span class="slot-label">'+slot.label+'</span></div>'
+      + '<div class="slot-marker">'+(ICONS[slot.icon]||ICONS.sun)+'</div>'
+      + '<div class="slot-heading"><span class="slot-time">'+slot.time+'</span><span class="slot-label">'+escapeHtml(slot.label)+'</span></div>'
       + '<div class="slot-card">'+rows+'</div>'
       + '</div>';
   }).join('');
 
   el.querySelectorAll('.dose-row').forEach(rowEl=>{
     const fire=()=>{
-      const slot = SCHEDULE.find(s=>s.id===rowEl.dataset.slot);
+      const slot = state.schedule.find(s=>s.id===rowEl.dataset.slot);
       const item = slot.items.find(i=>i.key===rowEl.dataset.item);
       toggleDose(slot, item);
     };
@@ -707,9 +1001,10 @@ function renderTimeline(){
 /* ---------------- rendering: Laporan page ---------------- */
 function renderStockChart(){
   const el=document.getElementById('stockChart');
-  if(!state.stock){ el.innerHTML='<p class="chart-loading">Memuat grafik…</p>'; return; }
+  if(!state.stock || !state.medDefs){ el.innerHTML='<p class="chart-loading">Memuat grafik…</p>'; return; }
+  const keys=Object.keys(state.medDefs);
+  if(!keys.length){ el.innerHTML='<p class="empty-note">Belum ada obat.</p>'; return; }
   const usage=computeUsage(state.stock);
-  const keys=Object.keys(MEDICINES);
   const rowH=28, top=6, chartW=300, trackX=104, trackW=chartW-trackX-38;
   const height = keys.length*rowH + top*2;
   let svg='';
@@ -718,18 +1013,19 @@ function renderStockChart(){
     svg += '<line x1="'+x+'" y1="0" x2="'+x+'" y2="'+height+'" stroke="'+COLORS.border+'" stroke-width="1"/>';
   });
   keys.forEach((k,i)=>{
-    const med=MEDICINES[k];
+    const med=state.medDefs[k];
     const qty=state.stock[k]||0;
-    const pct=Math.max(0,Math.min(100, qty/med.initial*100));
+    const base=med.initialStock>0?med.initialStock:Math.max(qty,1);
+    const pct=Math.max(0,Math.min(100, qty/base*100));
     const st=stockStatus(qty, usage[k]);
     const color = st.level==='bad'?COLORS.bad:st.level==='warn'?COLORS.warn:COLORS.ok;
     const y = top + i*rowH;
     const barY = y + 7;
     const w = Math.max(trackW*pct/100, pct>0?4:0);
-    svg += '<text x="0" y="'+(barY+9.5)+'" font-size="9.3" fill="'+COLORS.ink+'">'+med.name+'</text>';
+    svg += '<text x="0" y="'+(barY+9.5)+'" font-size="9.3" fill="'+COLORS.ink+'">'+escapeHtml(med.name)+'</text>';
     svg += '<rect x="'+trackX+'" y="'+barY+'" width="'+trackW+'" height="13" rx="4" fill="#eef2f0"/>';
     svg += '<rect x="'+trackX+'" y="'+barY+'" width="'+w+'" height="13" rx="4" fill="'+color+'"/>';
-    svg += '<text x="'+(trackX+trackW+6)+'" y="'+(barY+10)+'" font-size="9.3" fill="'+COLORS.inkSoft+'">'+qty+'/'+med.initial+'</text>';
+    svg += '<text x="'+(trackX+trackW+6)+'" y="'+(barY+10)+'" font-size="9.3" fill="'+COLORS.inkSoft+'">'+qty+'/'+med.initialStock+'</text>';
   });
   el.innerHTML = '<svg viewBox="0 0 '+chartW+' '+height+'" style="width:100%;height:auto;display:block;font-family:Inter,sans-serif">'+svg+'</svg>';
 }
@@ -739,6 +1035,7 @@ async function fetchWeekAdherence(endDateStr){
   const end = new Date(ey, em-1, ed);
   const days=[];
   for(let i=6;i>=0;i--){ const d=new Date(end); d.setDate(d.getDate()-i); days.push(toDateStr(d)); }
+  const total = totalDoses();
   const results = await Promise.all(days.map(async ds=>{
     let data=null;
     if(ds===state.date && state.log){ data=state.log; }
@@ -746,10 +1043,10 @@ async function fetchWeekAdherence(endDateStr){
       try{ const snap=await getDoc(doc(db,'medLogs',ds)); data = snap.exists()? snap.data() : null; }
       catch(e){ data=null; }
     }
-    if(!data) return {date:ds, pct:null};
+    if(!data || total<=0) return {date:ds, pct:null};
     let done=0;
-    SCHEDULE.forEach(slot=>slot.items.forEach(item=>{ if(data[slot.id+'_'+item.key]) done++; }));
-    return {date:ds, pct:Math.round(done/TOTAL_DOSES*100)};
+    state.schedule.forEach(slot=>slot.items.forEach(item=>{ if(data[slot.id+'_'+item.key]) done++; }));
+    return {date:ds, pct:Math.round(done/total*100)};
   }));
   return results;
 }
@@ -788,19 +1085,20 @@ async function renderAdherenceChart(){
 function renderStatusList(){
   const el=document.getElementById('statusList');
   document.getElementById('statusDateLabel').textContent = humanDate(state.date);
-  if(!state.stock || !state.log){ el.innerHTML=''; return; }
-  el.innerHTML = SCHEDULE.map(slot=>{
+  if(!state.stock || !state.log || !state.medDefs || !state.schedule){ el.innerHTML=''; return; }
+  if(!state.schedule.length){ el.innerHTML='<p class="empty-note">Belum ada jadwal.</p>'; return; }
+  el.innerHTML = state.schedule.map(slot=>{
     const rows = slot.items.map(item=>{
       const d=doseDisplay(slot,item);
       const icon = d.checked ? CHECK_ICON : X_ICON;
       const subNote = d.isBackup ? '<em>pengganti</em>' : '';
       return '<div class="status-row '+(d.checked?'done':'pending')+'">'
         + '<span class="status-icon">'+icon+'</span>'
-        + '<span class="status-name">'+d.med.name+' · '+d.med.dose+subNote+'</span>'
+        + '<span class="status-name">'+escapeHtml(d.med.name)+' · '+escapeHtml(d.med.dose)+subNote+'</span>'
         + '<span class="status-tag">'+(d.checked?'Diminum':'Belum')+'</span>'
         + '</div>';
     }).join('');
-    return '<div class="status-slot"><div class="status-slot-title">'+slot.time+' · '+slot.label+'</div>'+rows+'</div>';
+    return '<div class="status-slot"><div class="status-slot-title">'+slot.time+' · '+escapeHtml(slot.label)+'</div>'+rows+'</div>';
   }).join('');
 }
 
@@ -812,27 +1110,27 @@ async function renderLaporan(){
 
 /* ---------------- print report ---------------- */
 document.getElementById('printBtn').addEventListener('click', ()=>{
-  if(!state.stock || !state.log){ toast('Data belum siap.'); return; }
+  if(!state.stock || !state.log || !state.medDefs || !state.schedule){ toast('Data belum siap.'); return; }
   const usage = computeUsage(state.stock);
   document.getElementById('pDate').textContent = humanDate(state.date);
 
   let schedRows='';
-  SCHEDULE.forEach(slot=>{
+  state.schedule.forEach(slot=>{
     slot.items.forEach(item=>{
       const d = doseDisplay(slot, item);
       const statusTxt = d.checked ? 'Sudah diminum' : 'Belum diminum';
-      schedRows += '<tr><td>'+slot.time+' — '+slot.label+'</td><td>'+d.med.name+(d.isBackup?' (pengganti)':'')+'</td><td>'+d.med.dose+' · '+item.qty+' '+d.med.unit+'</td><td>'+statusTxt+'</td></tr>';
+      schedRows += '<tr><td>'+slot.time+' — '+escapeHtml(slot.label)+'</td><td>'+escapeHtml(d.med.name)+(d.isBackup?' (pengganti)':'')+'</td><td>'+escapeHtml(d.med.dose)+' · '+item.qty+' '+escapeHtml(d.med.unit)+'</td><td>'+statusTxt+'</td></tr>';
     });
   });
   document.getElementById('pSchedule').innerHTML = schedRows;
 
   let stockRows='';
-  Object.keys(MEDICINES).forEach(k=>{
-    const med=MEDICINES[k];
+  Object.keys(state.medDefs).forEach(k=>{
+    const med=state.medDefs[k];
     const qty=state.stock[k]||0;
     const st=stockStatus(qty, usage[k]);
     const cls = st.level==='bad'?'p-bad':st.level==='warn'?'p-warn':'p-ok';
-    stockRows += '<tr><td>'+med.name+' '+med.dose+'</td><td>'+med.initial+' '+med.unit+'</td><td>'+qty+' '+med.unit+'</td><td class="'+cls+'">'+st.label+'</td></tr>';
+    stockRows += '<tr><td>'+escapeHtml(med.name)+' '+escapeHtml(med.dose)+'</td><td>'+med.initialStock+' '+escapeHtml(med.unit)+'</td><td>'+qty+' '+escapeHtml(med.unit)+'</td><td class="'+cls+'">'+st.label+'</td></tr>';
   });
   document.getElementById('pStock').innerHTML = stockRows;
 
@@ -845,10 +1143,9 @@ function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+name));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.page===name));
   if(name==='laporan') renderLaporan();
+  if(name==='pengaturan'){ renderMedList(); renderScheduleEditor(); }
 }
-document.querySelectorAll('.nav-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>showPage(btn.dataset.page));
-});
+document.querySelectorAll('.nav-btn').forEach(btn=>btn.addEventListener('click', ()=>showPage(btn.dataset.page)));
 
 /* ---------------- date navigation ---------------- */
 const datePicker=document.getElementById('datePicker');
@@ -875,10 +1172,11 @@ document.getElementById('todayBtn').addEventListener('click',()=>{
 /* ---------------- boot ---------------- */
 (async function init(){
   setSync('loading');
-  ensureRestockList();
   try{
-    await ensureStockDoc();
+    await Promise.all([ensureStock(), ensureMedDefs(), ensureSchedule()]);
     listenStock();
+    listenMedDefs();
+    listenSchedule();
     listenLog(state.date);
     listenRestockHistory();
   }catch(e){
@@ -886,6 +1184,6 @@ document.getElementById('todayBtn').addEventListener('click',()=>{
     toast('Tidak dapat terhubung ke Firestore. Pastikan Firestore sudah diaktifkan di Firebase Console.');
   }
 })();
-</script>
+  </script>
 </body>
 </html>
