@@ -365,7 +365,7 @@
       </div>
 
       <div class="section">
-        <p class="section-head">Jadwal minum obat<small>Ubah jam/nama waktu, tambah atau hapus obat di tiap waktu</small></p>
+        <p class="section-head">Jadwal minum obat<small>Ubah jam/nama waktu, tambah atau hapus obat di tiap waktu. Perubahan berlaku mulai hari ini — histori hari-hari sebelumnya tidak akan berubah.</small></p>
         <div id="scheduleEditor"></div>
         <button class="btn-outline-full" id="addSlotBtn" type="button">+ Tambah waktu minum obat</button>
       </div>
@@ -455,20 +455,28 @@ const DEFAULT_MEDICINES = {
   clopidogrel:    { name:'Clopidogrel',   dose:'75 mg',   unit:'tablet', initialStock:30 },
 };
 const DEFAULT_SCHEDULE = [
-  { id:'pagi1', time:'06:00', label:'Pagi · 2 jam sebelum makan', icon:'sunrise', accent:'dawn',
-    items:[ {key:'lansoprazole', qty:1} ] },
-  { id:'pagi2', time:'07:30', label:'Pagi · sesudah makan', icon:'sun', accent:'dawn',
+  { id:'pagi1', time:'06:00', label:'Pagi · 2 jam sebelum makan', icon:'sunrise', accent:'dawn', addedOn:SCHEDULE_EPOCH,
+    items:[ {uid:'i_pagi1_1', key:'lansoprazole', qty:1, addedOn:SCHEDULE_EPOCH} ] },
+  { id:'pagi2', time:'07:30', label:'Pagi · sesudah makan', icon:'sun', accent:'dawn', addedOn:SCHEDULE_EPOCH,
     items:[
-      {key:'furosemide', qty:1}, {key:'digoxin', qty:1}, {key:'paracetamol', qty:1},
-      {key:'cefixime', qty:1}, {key:'citicoline', qty:1},
+      {uid:'i_pagi2_1', key:'furosemide', qty:1, addedOn:SCHEDULE_EPOCH},
+      {uid:'i_pagi2_2', key:'digoxin', qty:1, addedOn:SCHEDULE_EPOCH},
+      {uid:'i_pagi2_3', key:'paracetamol', qty:1, addedOn:SCHEDULE_EPOCH},
+      {uid:'i_pagi2_4', key:'cefixime', qty:1, addedOn:SCHEDULE_EPOCH},
+      {uid:'i_pagi2_5', key:'citicoline', qty:1, addedOn:SCHEDULE_EPOCH},
     ] },
-  { id:'sore', time:'17:00', label:'Sore · sesudah makan', icon:'sunset', accent:'dusk',
+  { id:'sore', time:'17:00', label:'Sore · sesudah makan', icon:'sunset', accent:'dusk', addedOn:SCHEDULE_EPOCH,
     items:[
-      {key:'astika_sub', qty:1, substitute:true, primary:'astika', backup:'clopidogrel'},
-      {key:'paracetamol', qty:1}, {key:'cefixime', qty:1}, {key:'citicoline', qty:1},
+      {uid:'i_sore_1', key:'astika_sub', qty:1, substitute:true, primary:'astika', backup:'clopidogrel', addedOn:SCHEDULE_EPOCH},
+      {uid:'i_sore_2', key:'paracetamol', qty:1, addedOn:SCHEDULE_EPOCH},
+      {uid:'i_sore_3', key:'cefixime', qty:1, addedOn:SCHEDULE_EPOCH},
+      {uid:'i_sore_4', key:'citicoline', qty:1, addedOn:SCHEDULE_EPOCH},
     ] },
-  { id:'malam', time:'20:00', label:'Malam · sesudah makan', icon:'moon', accent:'night',
-    items:[ {key:'spironolactone', qty:1}, {key:'atorvastatin', qty:1} ] },
+  { id:'malam', time:'20:00', label:'Malam · sesudah makan', icon:'moon', accent:'night', addedOn:SCHEDULE_EPOCH,
+    items:[
+      {uid:'i_malam_1', key:'spironolactone', qty:1, addedOn:SCHEDULE_EPOCH},
+      {uid:'i_malam_2', key:'atorvastatin', qty:1, addedOn:SCHEDULE_EPOCH},
+    ] },
 ];
 
 const COLORS = { ok:'#1d8a5f', warn:'#b8790f', bad:'#c6483d', border:'#e3ebe7', ink:'#142523', inkSoft:'#5b6b67' };
@@ -486,6 +494,7 @@ const TRASH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const DAYS_SHORT=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
 const DAYS=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const SCHEDULE_EPOCH = '2026-09-05'; // fallback "mulai berlaku" untuk data lama yang belum punya tanggal
 
 /* ---------------- state ---------------- */
 const state = { stock:null, log:null, medDefs:null, schedule:null, date: toDateStr(new Date()) };
@@ -525,6 +534,28 @@ function iconForTime(hhmm){
 function totalDoses(){
   return (state.schedule||[]).reduce((s,slot)=>s+slot.items.length,0);
 }
+function todayStr(){ return toDateStr(new Date()); }
+function genUid(){ return 'i'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4); }
+/**
+ * Jadwal bersifat "effective-dated": tiap slot & item punya addedOn (mulai berlaku)
+ * dan removedOn opsional (berhenti berlaku, exclusive). Menghapus/mengganti sesuatu
+ * tidak pernah menghapus objeknya dari state.schedule -- hanya menandai removedOn -
+ * sehingga hari-hari sebelum tanggal hapus tetap menampilkan data lama apa adanya.
+ * Fungsi ini menghitung "potret" jadwal yang berlaku pada satu tanggal tertentu.
+ */
+function scheduleForDate(dateStr){
+  return (state.schedule||[])
+    .filter(slot => (!slot.addedOn || slot.addedOn<=dateStr) && (!slot.removedOn || slot.removedOn>dateStr))
+    .map(slot => ({
+      ...slot,
+      items: (slot.items||[]).filter(it => (!it.addedOn || it.addedOn<=dateStr) && (!it.removedOn || it.removedOn>dateStr))
+    }))
+    .filter(slot => slot.items.length>0);
+}
+/** Slot & item yang masih aktif hari ini -- dipakai oleh editor jadwal (halaman "Atur"). */
+function activeScheduleToday(){
+  return scheduleForDate(todayStr());
+}
 function toast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
@@ -539,7 +570,7 @@ function setSync(mode){
 
 function computeUsage(stock){
   const usage={}; for(const k in state.medDefs) usage[k]=0;
-  state.schedule.forEach(slot=>slot.items.forEach(item=>{
+  activeScheduleToday().forEach(slot=>slot.items.forEach(item=>{
     if(item.substitute){
       const useKey = (stock && stock[item.primary]>0) ? item.primary : item.backup;
       if(useKey in usage) usage[useKey]+=item.qty;
@@ -589,9 +620,30 @@ function listenMedDefs(){
   onSnapshot(doc(db,'medDefs','current'), snap=>{ state.medDefs = snap.exists()?snap.data():{}; render(); },
     err=>{ console.error(err); setSync('err'); toast('Gagal memuat daftar obat.'); });
 }
+function normalizeSchedule(rawSlots){
+  let changed=false;
+  const slots=(rawSlots||[]).map(slot=>{
+    const s={...slot};
+    if(!s.addedOn){ s.addedOn=SCHEDULE_EPOCH; changed=true; }
+    s.items=(s.items||[]).map(item=>{
+      const it={...item};
+      if(!it.uid){ it.uid=genUid(); changed=true; }
+      if(!it.addedOn){ it.addedOn=s.addedOn||SCHEDULE_EPOCH; changed=true; }
+      return it;
+    });
+    return s;
+  });
+  return {slots, changed};
+}
 function listenSchedule(){
-  onSnapshot(doc(db,'schedule','current'), snap=>{ state.schedule = snap.exists()?(snap.data().slots||[]):[]; render(); },
-    err=>{ console.error(err); setSync('err'); toast('Gagal memuat jadwal.'); });
+  onSnapshot(doc(db,'schedule','current'), snap=>{
+    const raw = snap.exists()?(snap.data().slots||[]):[];
+    const {slots, changed} = normalizeSchedule(raw);
+    state.schedule = slots;
+    render();
+    // data lama (sebelum fitur jadwal-per-tanggal) belum punya addedOn/uid -> lengkapi sekali lalu simpan
+    if(changed) persistSchedule();
+  }, err=>{ console.error(err); setSync('err'); toast('Gagal memuat jadwal.'); });
 }
 function listenLog(dateStr){
   if(unsubLog) unsubLog();
@@ -723,7 +775,7 @@ document.getElementById('addMedBtn').addEventListener('click', addMedicine);
 
 async function deleteMedicine(key){
   const med=state.medDefs[key];
-  const usedIn = state.schedule.some(slot=>slot.items.some(it=> it.key===key || it.primary===key || it.backup===key));
+  const usedIn = activeScheduleToday().some(slot=>slot.items.some(it=> it.key===key || it.primary===key || it.backup===key));
   if(usedIn){ toast('Hapus dulu "'+med.name+'" dari jadwal sebelum menghapus obat ini.'); return; }
   if(!confirm('Hapus "'+med.name+'" dari daftar obat? Riwayat lama tetap tersimpan.')) return;
   setSync('busy');
@@ -768,11 +820,12 @@ function updateSlot(slotId, mutateFn){
 function renderScheduleEditor(){
   const el=document.getElementById('scheduleEditor');
   if(!state.schedule || !state.medDefs){ el.innerHTML='<p class="empty-note">Memuat…</p>'; return; }
-  if(!state.schedule.length){ el.innerHTML='<p class="empty-note">Belum ada jadwal. Tambahkan waktu baru di bawah.</p>'; return; }
+  const activeSlots = activeScheduleToday(); // hanya slot & obat yang berlaku hari ini yang bisa diedit
+  if(!activeSlots.length){ el.innerHTML='<p class="empty-note">Belum ada jadwal. Tambahkan waktu baru di bawah.</p>'; return; }
   const medOptions = Object.keys(state.medDefs).map(k=>'<option value="'+k+'">'+escapeHtml(state.medDefs[k].name)+'</option>').join('');
 
-  el.innerHTML = state.schedule.map(slot=>{
-    const items = slot.items.map((item,idx)=>{
+  el.innerHTML = activeSlots.map(slot=>{
+    const items = slot.items.map(item=>{
       let name, note='';
       if(item.substitute){
         const primMed=state.medDefs[item.primary], backMed=state.medDefs[item.backup];
@@ -782,7 +835,7 @@ function renderScheduleEditor(){
         const med=state.medDefs[item.key];
         name = med?med.name:'(obat sudah dihapus)';
       }
-      return '<div class="slot-editor-item" data-idx="'+idx+'">'
+      return '<div class="slot-editor-item" data-uid="'+item.uid+'">'
         + '<span class="slot-editor-item-name">'+escapeHtml(name)+note+'</span>'
         + '<input type="number" min="1" class="item-qty" value="'+item.qty+'">'
         + '<button class="icon-btn-sm danger remove-item" aria-label="Hapus obat dari slot ini">'+TRASH_ICON+'</button>'
@@ -805,6 +858,8 @@ function renderScheduleEditor(){
 
   el.querySelectorAll('.slot-editor-card').forEach(card=>{
     const slotId=card.dataset.slot;
+    // Ganti jam/label mengubah slot yang sama secara langsung (ini koreksi metadata,
+    // bukan "penghapusan", jadi berlaku untuk semua tanggal termasuk histori).
     card.querySelector('.slot-time').addEventListener('change', e=>{
       updateSlot(slotId, s=>{ s.time=e.target.value; const ic=iconForTime(s.time); s.icon=ic.icon; s.accent=ic.accent; });
     });
@@ -812,23 +867,43 @@ function renderScheduleEditor(){
       const v=e.target.value.trim();
       updateSlot(slotId, s=>{ if(v) s.label=v; });
     });
+    // Hapus waktu = soft delete (tandai removedOn hari ini), bukan splice, supaya
+    // histori hari-hari sebelumnya untuk waktu ini tetap utuh & bisa dilihat.
     card.querySelector('.remove-slot').addEventListener('click', ()=>{
       const label=card.querySelector('.slot-label').value;
-      if(!confirm('Hapus waktu "'+label+'" beserta semua obat di dalamnya?')) return;
-      state.schedule = state.schedule.filter(s=>s.id!==slotId);
-      renderScheduleEditor();
-      persistSchedule();
+      if(!confirm('Hapus waktu "'+label+'" beserta semua obat di dalamnya? Riwayat hari-hari sebelumnya tetap tersimpan.')) return;
+      updateSlot(slotId, s=>{ s.removedOn=todayStr(); });
     });
+    // Hapus satu obat dari slot = soft delete item (removedOn hari ini). Objeknya
+    // tetap ada di state.schedule, jadi hari-hari sebelumnya tetap menampilkannya.
     card.querySelectorAll('.remove-item').forEach(btn=>{
       btn.addEventListener('click', ()=>{
-        const idx=parseInt(btn.closest('.slot-editor-item').dataset.idx,10);
-        updateSlot(slotId, s=>{ s.items.splice(idx,1); });
+        const uid=btn.closest('.slot-editor-item').dataset.uid;
+        updateSlot(slotId, s=>{
+          const it=s.items.find(i=>i.uid===uid);
+          if(it) it.removedOn=todayStr();
+        });
       });
     });
-    card.querySelectorAll('.item-qty').forEach((input,i)=>{
+    // Ubah jumlah = tutup versi lama (removedOn hari ini) & buka versi baru mulai hari ini,
+    // supaya jumlah yang tercatat di hari-hari sebelumnya tidak ikut berubah.
+    card.querySelectorAll('.item-qty').forEach(input=>{
       input.addEventListener('change', ()=>{
+        const uid=input.closest('.slot-editor-item').dataset.uid;
         const val=Math.max(1, parseInt(input.value,10)||1);
-        updateSlot(slotId, s=>{ if(s.items[i]) s.items[i].qty=val; });
+        updateSlot(slotId, s=>{
+          const old=s.items.find(i=>i.uid===uid);
+          if(!old || old.qty===val) return;
+          const today=todayStr();
+          if(old.addedOn && old.addedOn>=today){
+            old.qty=val; // baru ditambahkan hari ini juga -> belum ada histori untuk dijaga
+          } else {
+            old.removedOn=today;
+            const clone={...old, uid:genUid(), qty:val, addedOn:today};
+            delete clone.removedOn;
+            s.items.push(clone);
+          }
+        });
       });
     });
     card.querySelector('.add-item-btn').addEventListener('click', ()=>{
@@ -838,8 +913,9 @@ function renderScheduleEditor(){
       const qty=Math.max(1, parseInt(qtyInput.value,10)||1);
       if(!key) return;
       updateSlot(slotId, s=>{
-        const existing=s.items.find(it=>!it.substitute && it.key===key);
-        if(existing) existing.qty += qty; else s.items.push({key, qty});
+        const existing=s.items.find(it=>!it.substitute && it.key===key && !it.removedOn);
+        if(existing) existing.qty += qty;
+        else s.items.push({uid:genUid(), key, qty, addedOn:todayStr()});
       });
     });
   });
@@ -848,7 +924,7 @@ document.getElementById('addSlotBtn').addEventListener('click', ()=>{
   const id='slot'+Math.random().toString(36).slice(2,8);
   const time='12:00';
   const ic=iconForTime(time);
-  state.schedule.push({ id, time, label:'Waktu baru', icon:ic.icon, accent:ic.accent, items:[] });
+  state.schedule.push({ id, time, label:'Waktu baru', icon:ic.icon, accent:ic.accent, addedOn:todayStr(), items:[] });
   renderScheduleEditor();
   persistSchedule();
 });
@@ -964,14 +1040,16 @@ function doseDisplay(slot, item){
 
 function renderTimeline(){
   const el=document.getElementById('timeline');
+  const daySchedule = scheduleForDate(state.date);
   if(!state.schedule.length){ el.innerHTML='<p class="empty-note">Belum ada jadwal. Atur di halaman "Atur".</p>'; return; }
-  el.innerHTML = state.schedule.map(slot=>{
+  if(!daySchedule.length){ el.innerHTML='<p class="empty-note">Tidak ada jadwal obat di tanggal ini.</p>'; return; }
+  el.innerHTML = daySchedule.map(slot=>{
     const rows = slot.items.map(item=>{
       const d = doseDisplay(slot, item);
       const rowClass = 'dose-row'+(d.checked?' done':'')+(d.outOfStock?' locked':'');
       const subTag = d.isBackup ? '<span class="tag-sub">pengganti</span>' : '';
       const outTag = d.outOfStock ? '<span class="tag-out">habis</span>' : '';
-      return '<div class="'+rowClass+'" data-slot="'+slot.id+'" data-item="'+item.key+'">'
+      return '<div class="'+rowClass+'" data-slot="'+slot.id+'" data-uid="'+item.uid+'">'
         + '<div class="checkbox" role="checkbox" aria-checked="'+d.checked+'" tabindex="0" aria-label="'+escapeHtml(d.med.name)+'">'+CHECK_ICON+'</div>'
         + '<div class="dose-info"><div class="dose-name">'+escapeHtml(d.med.name)+'</div>'
         + '<div class="dose-meta">'+escapeHtml(d.med.dose)+' · '+item.qty+' '+escapeHtml(d.med.unit)+subTag+outTag+'</div></div>'
@@ -986,9 +1064,11 @@ function renderTimeline(){
 
   el.querySelectorAll('.dose-row').forEach(rowEl=>{
     const fire=()=>{
+      // Cari objek slot/item asli (bukan hasil filter) lewat id+uid supaya toggle
+      // tetap mengenai entri yang benar walau ada versi lama/baru dengan key yang sama.
       const slot = state.schedule.find(s=>s.id===rowEl.dataset.slot);
-      const item = slot.items.find(i=>i.key===rowEl.dataset.item);
-      toggleDose(slot, item);
+      const item = slot && slot.items.find(i=>i.uid===rowEl.dataset.uid);
+      if(slot && item) toggleDose(slot, item);
     };
     rowEl.addEventListener('click', fire);
     const cb=rowEl.querySelector('.checkbox');
@@ -1035,8 +1115,9 @@ async function fetchWeekAdherence(endDateStr){
   const end = new Date(ey, em-1, ed);
   const days=[];
   for(let i=6;i>=0;i--){ const d=new Date(end); d.setDate(d.getDate()-i); days.push(toDateStr(d)); }
-  const total = totalDoses();
   const results = await Promise.all(days.map(async ds=>{
+    const daySchedule = scheduleForDate(ds);
+    const total = daySchedule.reduce((s,slot)=>s+slot.items.length,0);
     let data=null;
     if(ds===state.date && state.log){ data=state.log; }
     else{
@@ -1045,7 +1126,7 @@ async function fetchWeekAdherence(endDateStr){
     }
     if(!data || total<=0) return {date:ds, pct:null};
     let done=0;
-    state.schedule.forEach(slot=>slot.items.forEach(item=>{ if(data[slot.id+'_'+item.key]) done++; }));
+    daySchedule.forEach(slot=>slot.items.forEach(item=>{ if(data[slot.id+'_'+item.key]) done++; }));
     return {date:ds, pct:Math.round(done/total*100)};
   }));
   return results;
@@ -1086,8 +1167,9 @@ function renderStatusList(){
   const el=document.getElementById('statusList');
   document.getElementById('statusDateLabel').textContent = humanDate(state.date);
   if(!state.stock || !state.log || !state.medDefs || !state.schedule){ el.innerHTML=''; return; }
-  if(!state.schedule.length){ el.innerHTML='<p class="empty-note">Belum ada jadwal.</p>'; return; }
-  el.innerHTML = state.schedule.map(slot=>{
+  const daySchedule = scheduleForDate(state.date);
+  if(!daySchedule.length){ el.innerHTML='<p class="empty-note">Tidak ada jadwal obat di tanggal ini.</p>'; return; }
+  el.innerHTML = daySchedule.map(slot=>{
     const rows = slot.items.map(item=>{
       const d=doseDisplay(slot,item);
       const icon = d.checked ? CHECK_ICON : X_ICON;
@@ -1115,7 +1197,7 @@ document.getElementById('printBtn').addEventListener('click', ()=>{
   document.getElementById('pDate').textContent = humanDate(state.date);
 
   let schedRows='';
-  state.schedule.forEach(slot=>{
+  scheduleForDate(state.date).forEach(slot=>{
     slot.items.forEach(item=>{
       const d = doseDisplay(slot, item);
       const statusTxt = d.checked ? 'Sudah diminum' : 'Belum diminum';
