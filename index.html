@@ -576,18 +576,19 @@ function genUid(){ return 'i'+Math.random().toString(36).slice(2,8)+Date.now().t
  * sehingga hari-hari sebelum tanggal hapus tetap menampilkan data lama apa adanya.
  * Fungsi ini menghitung "potret" jadwal yang berlaku pada satu tanggal tertentu.
  */
-function scheduleForDate(dateStr){
+function scheduleForDate(dateStr, keepEmpty){
   return (state.schedule||[])
     .filter(slot => (!slot.addedOn || slot.addedOn<=dateStr) && (!slot.removedOn || slot.removedOn>dateStr))
     .map(slot => ({
       ...slot,
       items: (slot.items||[]).filter(it => (!it.addedOn || it.addedOn<=dateStr) && (!it.removedOn || it.removedOn>dateStr))
     }))
-    .filter(slot => slot.items.length>0);
+    .filter(slot => keepEmpty || slot.items.length>0);
 }
-/** Slot & item yang masih aktif hari ini -- dipakai oleh editor jadwal (halaman "Atur"). */
+/** Slot & item yang masih aktif hari ini -- dipakai oleh editor jadwal (halaman "Atur").
+ *  keepEmpty=true supaya slot yang baru dibuat (belum diisi obat) tetap tampil untuk diedit. */
 function activeScheduleToday(){
-  return scheduleForDate(todayStr());
+  return scheduleForDate(todayStr(), true);
 }
 function toast(msg){
   const t=document.getElementById('toast');
