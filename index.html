@@ -622,10 +622,17 @@ function listenMedDefs(){
 }
 function normalizeSchedule(rawSlots){
   let changed=false;
-  const slots=(rawSlots||[]).map(slot=>{
+  if(!Array.isArray(rawSlots)){
+    console.warn('Field "slots" di dokumen schedule/current bukan array yang valid:', rawSlots);
+    return {slots:[], changed:false};
+  }
+  const slots=rawSlots.filter(slot=>slot && typeof slot==='object').map(slot=>{
     const s={...slot};
+    if(!s.id){ s.id='slot'+Math.random().toString(36).slice(2,8); changed=true; }
     if(!s.addedOn){ s.addedOn=SCHEDULE_EPOCH; changed=true; }
-    s.items=(s.items||[]).map(item=>{
+    const rawItems = Array.isArray(s.items) ? s.items : [];
+    if(!Array.isArray(s.items)) changed=true;
+    s.items = rawItems.filter(item=>item && typeof item==='object').map(item=>{
       const it={...item};
       if(!it.uid){ it.uid=genUid(); changed=true; }
       if(!it.addedOn){ it.addedOn=s.addedOn||SCHEDULE_EPOCH; changed=true; }
@@ -637,12 +644,21 @@ function normalizeSchedule(rawSlots){
 }
 function listenSchedule(){
   onSnapshot(doc(db,'schedule','current'), snap=>{
-    const raw = snap.exists()?(snap.data().slots||[]):[];
-    const {slots, changed} = normalizeSchedule(raw);
-    state.schedule = slots;
-    render();
-    // data lama (sebelum fitur jadwal-per-tanggal) belum punya addedOn/uid -> lengkapi sekali lalu simpan
-    if(changed) persistSchedule();
+    try{
+      const raw = snap.exists()?(snap.data().slots||[]):[];
+      const {slots, changed} = normalizeSchedule(raw);
+      state.schedule = slots;
+      render();
+      // data lama (sebelum fitur jadwal-per-tanggal) belum punya addedOn/uid -> lengkapi sekali lalu simpan
+      if(changed) persistSchedule();
+    }catch(e){
+      console.error('listenSchedule gagal memproses data:', e);
+      setSync('err');
+      toast('Data jadwal bermasalah. Buka console (F12) untuk detail teknis.');
+      // tetap set array kosong supaya bagian lain (stok, dll) tidak ikut macet di "Memuat…"
+      if(state.schedule===null) state.schedule=[];
+      render();
+    }
   }, err=>{ console.error(err); setSync('err'); toast('Gagal memuat jadwal.'); });
 }
 function listenLog(dateStr){
@@ -1000,12 +1016,19 @@ function render(){
   document.getElementById('dateLabel').textContent = humanDate(state.date);
   if(!state.stock || !state.log || !state.medDefs || !state.schedule){ setSync('loading'); return; }
 
-  const usage = computeUsage(state.stock);
-  renderAlerts(usage);
-  renderTimeline();
-  ensureRestockList();
-  updateRestockNumbers();
-  if(currentPage==='laporan'){ renderStockChart(); renderStatusList(); }
+  try{
+    const usage = computeUsage(state.stock);
+    renderAlerts(usage);
+    renderTimeline();
+    ensureRestockList();
+    updateRestockNumbers();
+    if(currentPage==='laporan'){ renderStockChart(); renderStatusList(); }
+    setSync('ok');
+  }catch(e){
+    console.error('render() gagal:', e);
+    setSync('err');
+    toast('Gagal menampilkan data. Buka console (F12) untuk detail teknis.');
+  }
 }
 
 function renderAlerts(usage){
