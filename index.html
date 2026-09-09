@@ -175,8 +175,10 @@
   .modal-field{ margin-bottom:12px; }
   .modal-field:last-of-type{ margin-bottom:14px; }
   .modal-field label{ display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:5px; }
-  .modal-field input, .modal-field select{ width:100%; font-size:14.5px; padding:10px 12px; border-radius:9px; border:1.5px solid var(--border); font-family:inherit; background:#fff; }
+  .modal-field input, .modal-field select, .modal-field textarea{ width:100%; font-size:14.5px; padding:10px 12px; border-radius:9px; border:1.5px solid var(--border); font-family:inherit; background:#fff; }
+  .modal-field textarea{ resize:vertical; min-height:56px; line-height:1.4; }
   .modal-field input.big-num{ font-family:var(--serif); font-size:20px; }
+  .med-manage-desc{ font-size:11.5px; color:var(--ink-soft); margin-top:3px; line-height:1.4; }
 
   .add-med-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px 14px 6px; }
   .btn-primary-full{ width:100%; background:var(--brand); color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:700; padding:12px; cursor:pointer; margin-bottom:14px; }
@@ -217,6 +219,30 @@
   }
   .btn-print:active{ background:var(--brand-bg); }
   .foot-note{ text-align:center; font-size:11px; color:var(--ink-soft); padding:14px 20px 4px; }
+
+  /* ---------- auth screen ---------- */
+  .app-root{ display:none; }
+  .app-root.show{ display:block; }
+  .auth-screen{ display:none; min-height:100vh; align-items:center; justify-content:center; padding:24px; background:linear-gradient(165deg,var(--brand) 0%, #123f39 100%); }
+  .auth-screen.show{ display:flex; }
+  .auth-card{ background:#fff; border-radius:var(--radius-lg); padding:30px 24px; max-width:360px; width:100%; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,.2); }
+  .auth-card .app-title{ font-family:var(--serif); font-weight:600; font-size:22px; margin:0 0 4px; color:var(--brand); }
+  .auth-card p{ margin:0 0 18px; font-size:13px; line-height:1.5; color:var(--ink-soft); }
+  .auth-card .modal-field{ text-align:left; }
+  .auth-error{ display:none; text-align:left; font-size:12px; color:var(--bad); background:var(--bad-bg); border-radius:8px; padding:8px 10px; margin:-2px 0 12px; }
+  .auth-error.show{ display:block; }
+  .auth-link{ display:block; width:100%; background:none; border:none; color:var(--brand); font-size:12.5px; font-weight:600; margin-top:10px; cursor:pointer; font-family:inherit; padding:4px; }
+  .auth-link:active{ opacity:.7; }
+  .auth-note{ margin:16px 0 0 !important; font-size:11px !important; color:#9aa8a2 !important; }
+
+  /* ---------- account card (pengaturan page) ---------- */
+  .account-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .account-avatar{ width:40px; height:40px; border-radius:50%; background:var(--brand); color:#fff; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; font-family:var(--serif); }
+  .account-info{ flex:1; min-width:0; display:flex; align-items:center; gap:12px; }
+  .account-name{ font-size:14px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .account-email{ font-size:11.5px; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .btn-signout{ background:var(--bad-bg); color:var(--bad); border:none; border-radius:9px; font-size:12.5px; font-weight:700; padding:9px 14px; cursor:pointer; flex-shrink:0; }
+  .btn-signout:active{ background:#f6d9d6; }
 
   /* ---------- bottom nav ---------- */
   .bottom-nav{
@@ -267,6 +293,22 @@
 </head>
 <body>
 
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-card">
+      <p class="app-title">Pantau Obat</p>
+      <p id="authSubtitle">Masuk untuk mencatat stok &amp; jadwal minum obatmu sendiri. Data setiap akun tersimpan terpisah dan hanya bisa diakses oleh akun itu sendiri.</p>
+
+      <div class="modal-field"><label>Email</label><input type="email" id="authEmail" placeholder="nama@email.com" autocomplete="email"></div>
+      <div class="modal-field"><label>Kata sandi</label><input type="password" id="authPassword" placeholder="Minimal 6 karakter" autocomplete="current-password"></div>
+      <p class="auth-error" id="authError"></p>
+
+      <button class="btn-primary-full" id="authSubmitBtn" type="button">Masuk</button>
+      <button class="auth-link" id="authToggleBtn" type="button">Belum punya akun? Daftar di sini</button>
+      <button class="auth-link" id="authForgotBtn" type="button">Lupa kata sandi?</button>
+    </div>
+  </div>
+
+  <div class="app-root" id="appRoot">
   <div class="topbar">
     <div class="topbar-row">
       <div>
@@ -349,11 +391,25 @@
     <!-- ===== PAGE 4: PENGATURAN ===== -->
     <section class="page" id="page-pengaturan">
       <div class="section">
+        <p class="section-head">Akun<small>Data obat &amp; jadwal ini tersimpan khusus untuk akun yang sedang masuk</small></p>
+        <div class="account-card">
+          <div class="account-info">
+            <div class="account-avatar" id="accountAvatar">?</div>
+            <div>
+              <div class="account-name" id="accountEmail">–</div>
+            </div>
+          </div>
+          <button class="btn-signout" id="signOutBtn" type="button">Keluar</button>
+        </div>
+      </div>
+
+      <div class="section">
         <p class="section-head">Tambah jenis obat baru<small>Obat baru otomatis muncul di halaman Tambah Stok &amp; bisa dipasang ke jadwal</small></p>
         <div class="add-med-card">
           <div class="modal-field"><label>Nama obat</label><input type="text" id="newMedName" placeholder="mis. Amlodipine"></div>
           <div class="modal-field"><label>Dosis</label><input type="text" id="newMedDose" placeholder="mis. 5 mg"></div>
           <div class="modal-field"><label>Satuan</label><input type="text" id="newMedUnit" placeholder="mis. tablet, kapsul, ml"></div>
+          <div class="modal-field"><label>Deskripsi</label><textarea id="newMedDesc" rows="2" placeholder="mis. Obat penurun tekanan darah, diminum sesudah makan"></textarea></div>
           <div class="modal-field"><label>Stok awal</label><input type="number" inputmode="numeric" min="0" id="newMedStock" placeholder="0"></div>
           <button class="btn-primary-full" id="addMedBtn" type="button">+ Tambah obat</button>
         </div>
@@ -390,6 +446,7 @@
       <span>Atur</span>
     </button>
   </nav>
+  </div>
 
   <div class="overlay" id="overlay">
     <div class="modal">
@@ -425,6 +482,10 @@
   <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
+  sendPasswordResetEmail, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import {
   getFirestore, doc, getDoc, setDoc, updateDoc, deleteField, onSnapshot, increment,
   collection, addDoc, serverTimestamp, query, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
@@ -440,44 +501,16 @@ if(!firebaseConfig){
 }
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-/* ---------------- default data (only used to seed Firestore the first time) ---------------- */
-const DEFAULT_MEDICINES = {
-  paracetamol:    { name:'Paracetamol',   dose:'500 mg',  unit:'tablet', initialStock:9  },
-  astika:         { name:'Astika',        dose:'100 mg',  unit:'tablet', initialStock:4  },
-  digoxin:        { name:'Digoxin',       dose:'0.25 mg', unit:'tablet', initialStock:5  },
-  atorvastatin:   { name:'Atorvastatin',  dose:'20 mg',   unit:'tablet', initialStock:14 },
-  furosemide:     { name:'Furosemide',    dose:'40 mg',   unit:'tablet', initialStock:5  },
-  cefixime:       { name:'Cefixime',      dose:'100 mg',  unit:'kapsul', initialStock:9  },
-  citicoline:     { name:'Citicoline',    dose:'500 mg',  unit:'tablet', initialStock:9  },
-  spironolactone: { name:'Spironolacton', dose:'25 mg',   unit:'tablet', initialStock:4  },
-  lansoprazole:   { name:'Lansoptazole',  dose:'30 mg',   unit:'kapsul', initialStock:15 },
-  clopidogrel:    { name:'Clopidogrel',   dose:'75 mg',   unit:'tablet', initialStock:30 },
-};
-const DEFAULT_SCHEDULE = [
-  { id:'pagi1', time:'06:00', label:'Pagi · 2 jam sebelum makan', icon:'sunrise', accent:'dawn', addedOn:SCHEDULE_EPOCH,
-    items:[ {uid:'i_pagi1_1', key:'lansoprazole', qty:1, addedOn:SCHEDULE_EPOCH} ] },
-  { id:'pagi2', time:'07:30', label:'Pagi · sesudah makan', icon:'sun', accent:'dawn', addedOn:SCHEDULE_EPOCH,
-    items:[
-      {uid:'i_pagi2_1', key:'furosemide', qty:1, addedOn:SCHEDULE_EPOCH},
-      {uid:'i_pagi2_2', key:'digoxin', qty:1, addedOn:SCHEDULE_EPOCH},
-      {uid:'i_pagi2_3', key:'paracetamol', qty:1, addedOn:SCHEDULE_EPOCH},
-      {uid:'i_pagi2_4', key:'cefixime', qty:1, addedOn:SCHEDULE_EPOCH},
-      {uid:'i_pagi2_5', key:'citicoline', qty:1, addedOn:SCHEDULE_EPOCH},
-    ] },
-  { id:'sore', time:'17:00', label:'Sore · sesudah makan', icon:'sunset', accent:'dusk', addedOn:SCHEDULE_EPOCH,
-    items:[
-      {uid:'i_sore_1', key:'astika_sub', qty:1, substitute:true, primary:'astika', backup:'clopidogrel', addedOn:SCHEDULE_EPOCH},
-      {uid:'i_sore_2', key:'paracetamol', qty:1, addedOn:SCHEDULE_EPOCH},
-      {uid:'i_sore_3', key:'cefixime', qty:1, addedOn:SCHEDULE_EPOCH},
-      {uid:'i_sore_4', key:'citicoline', qty:1, addedOn:SCHEDULE_EPOCH},
-    ] },
-  { id:'malam', time:'20:00', label:'Malam · sesudah makan', icon:'moon', accent:'night', addedOn:SCHEDULE_EPOCH,
-    items:[
-      {uid:'i_malam_1', key:'spironolactone', qty:1, addedOn:SCHEDULE_EPOCH},
-      {uid:'i_malam_2', key:'atorvastatin', qty:1, addedOn:SCHEDULE_EPOCH},
-    ] },
-];
+/* ---------------- multi-user state ----------------
+ * Setiap akun yang masuk (email & kata sandi) punya data sendiri di Firestore,
+ * disimpan di bawah users/{uid}/... Tidak ada data obat/jadwal bawaan (default) --
+ * setiap akun baru mulai dari kosong dan mengisi sendiri daftar obatnya.
+ */
+let uid = null;
+function userDoc(...segments){ return doc(db, 'users', uid, ...segments); }
+function userCollection(...segments){ return collection(db, 'users', uid, ...segments); }
 
 const COLORS = { ok:'#1d8a5f', warn:'#b8790f', bad:'#c6483d', border:'#e3ebe7', ink:'#142523', inkSoft:'#5b6b67' };
 
@@ -587,37 +620,31 @@ function stockStatus(qty, use){
   return {level:'ok', label:'≈ '+days+' hari lagi'};
 }
 
-/* ---------------- firestore init ---------------- */
+/* ---------------- firestore init ----------------
+ * Dokumen baru dibuat kosong (bukan diisi obat contoh) -- setiap akun mengisi
+ * sendiri daftar obatnya lewat halaman "Atur".
+ */
 async function ensureStock(){
-  const ref=doc(db,'medStock','current');
+  const ref=userDoc('medStock','current');
   const snap=await getDoc(ref);
-  if(!snap.exists()){
-    const initial={};
-    for(const k in DEFAULT_MEDICINES) initial[k]=DEFAULT_MEDICINES[k].initialStock;
-    initial._initializedAt='2026-09-05';
-    await setDoc(ref, initial);
-  }
+  if(!snap.exists()) await setDoc(ref, {});
 }
 async function ensureMedDefs(){
-  const ref=doc(db,'medDefs','current');
+  const ref=userDoc('medDefs','current');
   const snap=await getDoc(ref);
-  if(!snap.exists()){
-    const initial={};
-    for(const k in DEFAULT_MEDICINES) initial[k]={...DEFAULT_MEDICINES[k], initialDate:'2026-09-05'};
-    await setDoc(ref, initial);
-  }
+  if(!snap.exists()) await setDoc(ref, {});
 }
 async function ensureSchedule(){
-  const ref=doc(db,'schedule','current');
+  const ref=userDoc('schedule','current');
   const snap=await getDoc(ref);
-  if(!snap.exists()) await setDoc(ref, { slots: DEFAULT_SCHEDULE });
+  if(!snap.exists()) await setDoc(ref, { slots: [] });
 }
 function listenStock(){
-  onSnapshot(doc(db,'medStock','current'), snap=>{ state.stock = snap.exists()?snap.data():{}; render(); },
+  return onSnapshot(userDoc('medStock','current'), snap=>{ state.stock = snap.exists()?snap.data():{}; render(); },
     err=>{ console.error(err); setSync('err'); toast('Gagal memuat data stok. Periksa Firestore & aturan keamanan.'); });
 }
 function listenMedDefs(){
-  onSnapshot(doc(db,'medDefs','current'), snap=>{ state.medDefs = snap.exists()?snap.data():{}; render(); },
+  return onSnapshot(userDoc('medDefs','current'), snap=>{ state.medDefs = snap.exists()?snap.data():{}; render(); },
     err=>{ console.error(err); setSync('err'); toast('Gagal memuat daftar obat.'); });
 }
 function normalizeSchedule(rawSlots){
@@ -643,7 +670,7 @@ function normalizeSchedule(rawSlots){
   return {slots, changed};
 }
 function listenSchedule(){
-  onSnapshot(doc(db,'schedule','current'), snap=>{
+  return onSnapshot(userDoc('schedule','current'), snap=>{
     try{
       const raw = snap.exists()?(snap.data().slots||[]):[];
       const {slots, changed} = normalizeSchedule(raw);
@@ -664,13 +691,13 @@ function listenSchedule(){
 function listenLog(dateStr){
   if(unsubLog) unsubLog();
   state.log=null;
-  const ref=doc(db,'medLogs',dateStr);
+  const ref=userDoc('medLogs',dateStr);
   unsubLog=onSnapshot(ref, snap=>{ state.log = snap.exists()?snap.data():{}; render(); },
     err=>{ console.error(err); setSync('err'); toast('Gagal memuat jadwal harian.'); });
 }
 function listenRestockHistory(){
-  const q = query(collection(db,'restockLog'), orderBy('ts','desc'), limit(20));
-  onSnapshot(q, snap=>{
+  const q = query(userCollection('restockLog'), orderBy('ts','desc'), limit(20));
+  return onSnapshot(q, snap=>{
     const rows=[]; snap.forEach(d=>rows.push(d.data()));
     renderRestockHistory(rows);
   }, err=>{ console.error(err); document.getElementById('restockHistory').innerHTML='<p class="empty-note">Gagal memuat riwayat.</p>'; });
@@ -706,10 +733,10 @@ async function toggleDose(slot, item){
   const delta = newChecked ? -item.qty : item.qty;
   setSync('busy');
   try{
-    await updateDoc(doc(db,'medStock','current'), { [medKeyUsed]: increment(delta) });
+    await updateDoc(userDoc('medStock','current'), { [medKeyUsed]: increment(delta) });
     const payload = { [fieldKey]: newChecked };
     if(item.substitute) payload[fieldKey+'_med'] = medKeyUsed;
-    await setDoc(doc(db,'medLogs',state.date), payload, { merge:true });
+    await setDoc(userDoc('medLogs',state.date), payload, { merge:true });
     setSync('ok');
   }catch(e){
     console.error(e); setSync('err');
@@ -734,7 +761,7 @@ function openStockModal(key){
     if(isNaN(val) || val<0){ toast('Masukkan angka yang valid.'); return; }
     setSync('busy');
     try{
-      await setDoc(doc(db,'medStock','current'), { [key]: val }, { merge:true });
+      await setDoc(userDoc('medStock','current'), { [key]: val }, { merge:true });
       setSync('ok'); toast('Stok '+med.name+' diperbarui.');
     }catch(e){ console.error(e); setSync('err'); toast('Gagal menyimpan koreksi stok.'); }
     closeModal();
@@ -748,16 +775,18 @@ function openEditMedModal(key){
   document.getElementById('modalBody').innerHTML =
     '<div class="modal-field"><label>Nama obat</label><input type="text" id="mfName" value="'+escapeHtml(med.name)+'"></div>'
     + '<div class="modal-field"><label>Dosis</label><input type="text" id="mfDose" value="'+escapeHtml(med.dose)+'" placeholder="mis. 500 mg"></div>'
-    + '<div class="modal-field"><label>Satuan</label><input type="text" id="mfUnit" value="'+escapeHtml(med.unit)+'" placeholder="mis. tablet, kapsul, ml"></div>';
+    + '<div class="modal-field"><label>Satuan</label><input type="text" id="mfUnit" value="'+escapeHtml(med.unit)+'" placeholder="mis. tablet, kapsul, ml"></div>'
+    + '<div class="modal-field"><label>Deskripsi</label><textarea id="mfDesc" rows="2" placeholder="mis. Obat penurun tekanan darah">'+escapeHtml(med.desc||'')+'</textarea></div>';
   document.getElementById('overlay').classList.add('show');
   document.getElementById('modalSave').onclick=async()=>{
     const name=document.getElementById('mfName').value.trim();
     const dose=document.getElementById('mfDose').value.trim();
     const unit=document.getElementById('mfUnit').value.trim();
+    const desc=document.getElementById('mfDesc').value.trim();
     if(!name){ toast('Nama obat tidak boleh kosong.'); return; }
     setSync('busy');
     try{
-      await setDoc(doc(db,'medDefs','current'), { [key]: { ...med, name, dose, unit } }, { merge:true });
+      await setDoc(userDoc('medDefs','current'), { [key]: { ...med, name, dose, unit, desc } }, { merge:true });
       setSync('ok'); toast('Data '+name+' diperbarui.');
     }catch(e){ console.error(e); setSync('err'); toast('Gagal menyimpan.'); }
     closeModal();
@@ -769,20 +798,22 @@ async function addMedicine(){
   const name=document.getElementById('newMedName').value.trim();
   const dose=document.getElementById('newMedDose').value.trim();
   const unit=document.getElementById('newMedUnit').value.trim() || 'tablet';
+  const desc=document.getElementById('newMedDesc').value.trim();
   const stock=parseInt(document.getElementById('newMedStock').value,10) || 0;
   if(!name){ toast('Nama obat wajib diisi.'); return; }
   const key=uniqueKey(slugify(name), Object.keys(state.medDefs||{}));
   setSync('busy');
   try{
-    await setDoc(doc(db,'medDefs','current'), { [key]: { name, dose, unit, initialStock:stock, initialDate: toDateStr(new Date()) } }, { merge:true });
-    await setDoc(doc(db,'medStock','current'), { [key]: stock }, { merge:true });
+    await setDoc(userDoc('medDefs','current'), { [key]: { name, dose, unit, desc, initialStock:stock, initialDate: toDateStr(new Date()) } }, { merge:true });
+    await setDoc(userDoc('medStock','current'), { [key]: stock }, { merge:true });
     if(stock>0){
-      await addDoc(collection(db,'restockLog'), { medKey:key, medName:name, unit, qty:stock, date: toDateStr(new Date()), ts: serverTimestamp(), note:'Obat baru ditambahkan' });
+      await addDoc(userCollection('restockLog'), { medKey:key, medName:name, unit, qty:stock, date: toDateStr(new Date()), ts: serverTimestamp(), note:'Obat baru ditambahkan' });
     }
     setSync('ok'); toast('Obat '+name+' ditambahkan.');
     document.getElementById('newMedName').value='';
     document.getElementById('newMedDose').value='';
     document.getElementById('newMedUnit').value='';
+    document.getElementById('newMedDesc').value='';
     document.getElementById('newMedStock').value='';
     renderMedList();
   }catch(e){ console.error(e); setSync('err'); toast('Gagal menambah obat.'); }
@@ -796,8 +827,8 @@ async function deleteMedicine(key){
   if(!confirm('Hapus "'+med.name+'" dari daftar obat? Riwayat lama tetap tersimpan.')) return;
   setSync('busy');
   try{
-    await updateDoc(doc(db,'medDefs','current'), { [key]: deleteField() });
-    await updateDoc(doc(db,'medStock','current'), { [key]: deleteField() });
+    await updateDoc(userDoc('medDefs','current'), { [key]: deleteField() });
+    await updateDoc(userDoc('medStock','current'), { [key]: deleteField() });
     setSync('ok'); toast('Obat '+med.name+' dihapus.');
     renderMedList();
   }catch(e){ console.error(e); setSync('err'); toast('Gagal menghapus.'); }
@@ -810,9 +841,10 @@ function renderMedList(){
   if(!keys.length){ el.innerHTML='<p class="empty-note">Belum ada obat.</p>'; return; }
   el.innerHTML = keys.map(k=>{
     const med=state.medDefs[k];
+    const descHtml = med.desc ? '<div class="med-manage-desc">'+escapeHtml(med.desc)+'</div>' : '';
     return '<div class="med-manage-row" data-key="'+k+'">'
       + '<div class="med-manage-info"><div class="med-manage-name">'+escapeHtml(med.name)+'</div>'
-      + '<div class="med-manage-meta">'+escapeHtml(med.dose)+' · '+escapeHtml(med.unit)+'</div></div>'
+      + '<div class="med-manage-meta">'+escapeHtml(med.dose)+' · '+escapeHtml(med.unit)+'</div>'+descHtml+'</div>'
       + '<button class="icon-btn-sm edit-med" aria-label="Edit obat">'+EDIT_ICON+'</button>'
       + '<button class="icon-btn-sm danger del-med" aria-label="Hapus obat">'+TRASH_ICON+'</button>'
       + '</div>';
@@ -824,7 +856,7 @@ function renderMedList(){
 /* ---------------- schedule editor (Pengaturan page) ---------------- */
 async function persistSchedule(){
   setSync('busy');
-  try{ await setDoc(doc(db,'schedule','current'), { slots: state.schedule }); setSync('ok'); }
+  try{ await setDoc(userDoc('schedule','current'), { slots: state.schedule }); setSync('ok'); }
   catch(e){ console.error(e); setSync('err'); toast('Gagal menyimpan jadwal.'); }
 }
 function updateSlot(slotId, mutateFn){
@@ -949,8 +981,8 @@ document.getElementById('addSlotBtn').addEventListener('click', ()=>{
 async function addStock(key, qty){
   setSync('busy');
   try{
-    await updateDoc(doc(db,'medStock','current'), { [key]: increment(qty) });
-    await addDoc(collection(db,'restockLog'), {
+    await updateDoc(userDoc('medStock','current'), { [key]: increment(qty) });
+    await addDoc(userCollection('restockLog'), {
       medKey:key, medName:state.medDefs[key].name, unit:state.medDefs[key].unit, qty,
       date: toDateStr(new Date()), ts: serverTimestamp()
     });
@@ -1144,7 +1176,7 @@ async function fetchWeekAdherence(endDateStr){
     let data=null;
     if(ds===state.date && state.log){ data=state.log; }
     else{
-      try{ const snap=await getDoc(doc(db,'medLogs',ds)); data = snap.exists()? snap.data() : null; }
+      try{ const snap=await getDoc(userDoc('medLogs',ds)); data = snap.exists()? snap.data() : null; }
       catch(e){ data=null; }
     }
     if(!data || total<=0) return {date:ds, pct:null};
@@ -1274,21 +1306,146 @@ document.getElementById('todayBtn').addEventListener('click',()=>{
   if(currentPage==='laporan') renderLaporan();
 });
 
-/* ---------------- boot ---------------- */
-(async function init(){
+/* ---------------- auth: login / register / logout (email & password) ---------------- */
+const authEmailInput = document.getElementById('authEmail');
+const authPasswordInput = document.getElementById('authPassword');
+const authErrorEl = document.getElementById('authError');
+const authSubmitBtn = document.getElementById('authSubmitBtn');
+const authToggleBtn = document.getElementById('authToggleBtn');
+const authForgotBtn = document.getElementById('authForgotBtn');
+const authSubtitleEl = document.getElementById('authSubtitle');
+let authMode = 'login'; // 'login' | 'register'
+
+function setAuthError(msg){
+  authErrorEl.textContent = msg || '';
+  authErrorEl.classList.toggle('show', !!msg);
+}
+function setAuthMode(mode){
+  authMode = mode;
+  setAuthError('');
+  if(mode==='login'){
+    authSubtitleEl.textContent = 'Masuk untuk mencatat stok & jadwal minum obatmu sendiri. Data setiap akun tersimpan terpisah dan hanya bisa diakses oleh akun itu sendiri.';
+    authSubmitBtn.textContent = 'Masuk';
+    authToggleBtn.textContent = 'Belum punya akun? Daftar di sini';
+    authForgotBtn.style.display = '';
+  } else {
+    authSubtitleEl.textContent = 'Buat akun baru dengan email & kata sandi. Data obatmu nanti hanya bisa diakses lewat akun ini.';
+    authSubmitBtn.textContent = 'Daftar';
+    authToggleBtn.textContent = 'Sudah punya akun? Masuk di sini';
+    authForgotBtn.style.display = 'none';
+  }
+}
+authToggleBtn.addEventListener('click', ()=> setAuthMode(authMode==='login' ? 'register' : 'login'));
+
+function authErrorMessage(code){
+  const map = {
+    'auth/invalid-email': 'Format email tidak valid.',
+    'auth/missing-password': 'Kata sandi wajib diisi.',
+    'auth/user-not-found': 'Akun dengan email ini tidak ditemukan.',
+    'auth/wrong-password': 'Kata sandi salah.',
+    'auth/invalid-credential': 'Email atau kata sandi salah.',
+    'auth/email-already-in-use': 'Email ini sudah terdaftar. Coba masuk saja.',
+    'auth/weak-password': 'Kata sandi minimal 6 karakter.',
+    'auth/too-many-requests': 'Terlalu banyak percobaan. Coba lagi beberapa saat lagi.',
+    'auth/network-request-failed': 'Gagal terhubung ke jaringan. Periksa koneksi internet.',
+    'auth/operation-not-allowed': 'Login email & kata sandi belum diaktifkan di Firebase Console.',
+  };
+  return map[code] || 'Terjadi kesalahan. Coba lagi.';
+}
+
+authSubmitBtn.addEventListener('click', async ()=>{
+  const email = authEmailInput.value.trim();
+  const password = authPasswordInput.value;
+  if(!email || !password){ setAuthError('Email dan kata sandi wajib diisi.'); return; }
+  setAuthError('');
+  authSubmitBtn.disabled = true;
+  const busyLabel = authMode==='login' ? 'Masuk…' : 'Mendaftar…';
+  authSubmitBtn.textContent = busyLabel;
+  try{
+    if(authMode==='login') await signInWithEmailAndPassword(auth, email, password);
+    else await createUserWithEmailAndPassword(auth, email, password);
+    authPasswordInput.value='';
+  }catch(e){
+    console.error(e);
+    setAuthError(authErrorMessage(e.code));
+  }finally{
+    authSubmitBtn.disabled = false;
+    authSubmitBtn.textContent = authMode==='login' ? 'Masuk' : 'Daftar';
+  }
+});
+
+authForgotBtn.addEventListener('click', async ()=>{
+  const email = authEmailInput.value.trim();
+  if(!email){ setAuthError('Isi email dulu, lalu ketuk "Lupa kata sandi?" lagi.'); return; }
+  try{
+    await sendPasswordResetEmail(auth, email);
+    setAuthError('');
+    toast('Link reset kata sandi sudah dikirim ke '+email+'.');
+  }catch(e){
+    console.error(e);
+    setAuthError(authErrorMessage(e.code));
+  }
+});
+
+document.getElementById('signOutBtn').addEventListener('click', async ()=>{
+  if(!confirm('Keluar dari akun ini?')) return;
+  try{ await signOut(auth); }
+  catch(e){ console.error(e); toast('Gagal keluar. Coba lagi.'); }
+});
+
+let unsubStock=null, unsubMedDefs=null, unsubSchedule=null, unsubRestock=null;
+function teardownListeners(){
+  if(unsubStock) unsubStock();
+  if(unsubMedDefs) unsubMedDefs();
+  if(unsubSchedule) unsubSchedule();
+  if(unsubRestock) unsubRestock();
+  if(unsubLog) unsubLog();
+  unsubStock=unsubMedDefs=unsubSchedule=unsubRestock=unsubLog=null;
+}
+function resetAppState(){
+  state.stock=null; state.log=null; state.medDefs=null; state.schedule=null;
+  state.date=toDateStr(new Date());
+  datePicker.value=state.date;
+  currentPage='jadwal';
+  showPage('jadwal');
+  restockKeysSig='';
+}
+
+async function bootApp(){
   setSync('loading');
   try{
     await Promise.all([ensureStock(), ensureMedDefs(), ensureSchedule()]);
-    listenStock();
-    listenMedDefs();
-    listenSchedule();
+    unsubStock = listenStock();
+    unsubMedDefs = listenMedDefs();
+    unsubSchedule = listenSchedule();
     listenLog(state.date);
-    listenRestockHistory();
+    unsubRestock = listenRestockHistory();
   }catch(e){
     console.error(e); setSync('err');
-    toast('Tidak dapat terhubung ke Firestore. Pastikan Firestore sudah diaktifkan di Firebase Console.');
+    toast('Tidak dapat terhubung ke Firestore. Pastikan Firestore sudah diaktifkan & aturan keamanan mengizinkan akun ini.');
   }
-})();
+}
+
+/* ---------------- boot ---------------- */
+onAuthStateChanged(auth, async (user)=>{
+  if(user){
+    uid = user.uid;
+    document.getElementById('accountEmail').textContent = user.email || '';
+    document.getElementById('accountAvatar').textContent = (user.email||'?').charAt(0).toUpperCase();
+    document.getElementById('authScreen').classList.remove('show');
+    document.getElementById('appRoot').classList.add('show');
+    await bootApp();
+  } else {
+    teardownListeners();
+    uid = null;
+    resetAppState();
+    authEmailInput.value='';
+    authPasswordInput.value='';
+    setAuthMode('login');
+    document.getElementById('appRoot').classList.remove('show');
+    document.getElementById('authScreen').classList.add('show');
+  }
+});
   </script>
 </body>
 </html>
