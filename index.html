@@ -463,16 +463,10 @@
   <div class="toast" id="toast"></div>
 
   <div id="printReport">
-    <p class="p-h1">Laporan Harian Konsumsi Obat</p>
+    <p class="p-h1">Laporan Stok Obat</p>
     <p class="p-sub" id="pDate">–</p>
-    <div class="p-section-title">Jadwal &amp; status minum obat</div>
     <table>
-      <thead><tr><th>Waktu</th><th>Obat</th><th>Dosis</th><th>Status</th></tr></thead>
-      <tbody id="pSchedule"></tbody>
-    </table>
-    <div class="p-section-title">Ringkasan stok</div>
-    <table>
-      <thead><tr><th>Obat</th><th>Stok awal</th><th>Stok saat ini</th><th>Estimasi habis</th></tr></thead>
+      <thead><tr><th>Obat</th><th>Deskripsi</th><th>Dosis/hari</th><th>Stok awal</th><th>Stok saat ini</th><th>Estimasi habis</th></tr></thead>
       <tbody id="pStock"></tbody>
     </table>
   </div>
@@ -619,6 +613,21 @@ function stockStatus(qty, use){
   if(days<=3) return {level:'bad', label:'≈ '+days+' hari lagi'};
   if(days<=7) return {level:'warn', label:'≈ '+days+' hari lagi'};
   return {level:'ok', label:'≈ '+days+' hari lagi'};
+}
+/** Hitung berapa kali & berapa butir/kapsul per pemberian untuk tiap obat dari jadwal
+ *  aktif hari ini -- dipakai kolom "Dosis/hari" pada laporan cetak stok. */
+function computeDosagePerDay(){
+  const info={}; for(const k in state.medDefs) info[k]={ times:0, qtySet:new Set(), total:0 };
+  activeScheduleToday().forEach(slot=>slot.items.forEach(item=>{
+    const key = item.substitute ? item.primary : item.key;
+    if(info[key]){ info[key].times+=1; info[key].qtySet.add(item.qty); info[key].total+=item.qty; }
+  }));
+  return info;
+}
+function formatDosagePerDay(d){
+  if(!d || d.times===0) return '–';
+  if(d.qtySet.size===1) return d.times+'x'+[...d.qtySet][0];
+  return d.total+'/hari';
 }
 
 /* ---------------- firestore init ----------------
@@ -1248,19 +1257,10 @@ async function renderLaporan(){
 
 /* ---------------- print report ---------------- */
 document.getElementById('printBtn').addEventListener('click', ()=>{
-  if(!state.stock || !state.log || !state.medDefs || !state.schedule){ toast('Data belum siap.'); return; }
+  if(!state.stock || !state.medDefs || !state.schedule){ toast('Data belum siap.'); return; }
   const usage = computeUsage(state.stock);
-  document.getElementById('pDate').textContent = humanDate(state.date);
-
-  let schedRows='';
-  scheduleForDate(state.date).forEach(slot=>{
-    slot.items.forEach(item=>{
-      const d = doseDisplay(slot, item);
-      const statusTxt = d.checked ? 'Sudah diminum' : 'Belum diminum';
-      schedRows += '<tr><td>'+slot.time+' — '+escapeHtml(slot.label)+'</td><td>'+escapeHtml(d.med.name)+(d.isBackup?' (pengganti)':'')+'</td><td>'+escapeHtml(d.med.dose)+' · '+item.qty+' '+escapeHtml(d.med.unit)+'</td><td>'+statusTxt+'</td></tr>';
-    });
-  });
-  document.getElementById('pSchedule').innerHTML = schedRows;
+  const dosage = computeDosagePerDay();
+  document.getElementById('pDate').textContent = 'Dicetak '+humanDate(toDateStr(new Date()));
 
   let stockRows='';
   Object.keys(state.medDefs).forEach(k=>{
@@ -1268,9 +1268,16 @@ document.getElementById('printBtn').addEventListener('click', ()=>{
     const qty=state.stock[k]||0;
     const st=stockStatus(qty, usage[k]);
     const cls = st.level==='bad'?'p-bad':st.level==='warn'?'p-warn':'p-ok';
-    stockRows += '<tr><td>'+escapeHtml(med.name)+' '+escapeHtml(med.dose)+'</td><td>'+med.initialStock+' '+escapeHtml(med.unit)+'</td><td>'+qty+' '+escapeHtml(med.unit)+'</td><td class="'+cls+'">'+st.label+'</td></tr>';
+    stockRows += '<tr>'
+      + '<td>'+escapeHtml(med.name)+' '+escapeHtml(med.dose)+'</td>'
+      + '<td>'+escapeHtml(med.desc||'–')+'</td>'
+      + '<td>'+escapeHtml(formatDosagePerDay(dosage[k]))+'</td>'
+      + '<td>'+med.initialStock+' '+escapeHtml(med.unit)+'</td>'
+      + '<td>'+qty+' '+escapeHtml(med.unit)+'</td>'
+      + '<td class="'+cls+'">'+st.label+'</td>'
+      + '</tr>';
   });
-  document.getElementById('pStock').innerHTML = stockRows;
+  document.getElementById('pStock').innerHTML = stockRows || '<tr><td colspan="6">Belum ada obat.</td></tr>';
 
   window.print();
 });
