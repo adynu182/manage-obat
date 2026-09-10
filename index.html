@@ -410,7 +410,7 @@
           <div class="modal-field"><label>Dosis</label><input type="text" id="newMedDose" placeholder="mis. 5 mg"></div>
           <div class="modal-field"><label>Satuan</label><input type="text" id="newMedUnit" placeholder="mis. tablet, kapsul, ml"></div>
           <div class="modal-field"><label>Deskripsi</label><textarea id="newMedDesc" rows="2" placeholder="mis. Obat penurun tekanan darah, diminum sesudah makan"></textarea></div>
-          <div class="modal-field"><label>Stok awal</label><input type="number" inputmode="numeric" min="0" id="newMedStock" placeholder="0"></div>
+          <div class="modal-field"><label>Stok awal</label><input type="number" inputmode="decimal" min="0" step="0.5" id="newMedStock" placeholder="0"></div>
           <button class="btn-primary-full" id="addMedBtn" type="button">+ Tambah obat</button>
         </div>
       </div>
@@ -541,6 +541,17 @@ function humanDate(dateStr){
 function escapeHtml(s){
   return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+/** Format jumlah obat untuk ditampilkan -- 0.5 jadi "½", 1.5 jadi "1½", dst,
+ *  supaya dosis setengah tablet terbaca alami (bukan "0.5" mentah). */
+function formatQty(n){
+  if(n==null || isNaN(n)) return '0';
+  const rounded = Math.round(n*100)/100;
+  const whole = Math.floor(rounded);
+  const frac = Math.round((rounded-whole)*100)/100;
+  if(frac===0) return String(whole);
+  if(frac===0.5) return (whole>0 ? whole+'½' : '½');
+  return String(rounded);
+}
 function slugify(name){
   let base=String(name).toLowerCase().trim().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
   return base || 'obat';
@@ -577,7 +588,8 @@ function scheduleForDate(dateStr, keepEmpty){
       ...slot,
       items: (slot.items||[]).filter(it => (!it.addedOn || it.addedOn<=dateStr) && (!it.removedOn || it.removedOn>dateStr))
     }))
-    .filter(slot => keepEmpty || slot.items.length>0);
+    .filter(slot => keepEmpty || slot.items.length>0)
+    .sort((a,b) => a.time.localeCompare(b.time)); // urutkan pagi -> malam
 }
 /** Slot & item yang masih aktif hari ini -- dipakai oleh editor jadwal (halaman "Atur").
  *  keepEmpty=true supaya slot yang baru dibuat (belum diisi obat) tetap tampil untuk diedit. */
@@ -626,8 +638,8 @@ function computeDosagePerDay(){
 }
 function formatDosagePerDay(d){
   if(!d || d.times===0) return '–';
-  if(d.qtySet.size===1) return d.times+'x'+[...d.qtySet][0];
-  return d.total+'/hari';
+  if(d.qtySet.size===1) return d.times+'x'+formatQty([...d.qtySet][0]);
+  return formatQty(d.total)+'/hari';
 }
 
 /* ---------------- firestore init ----------------
@@ -764,10 +776,10 @@ function openStockModal(key){
   document.getElementById('modalTitle').textContent='Koreksi stok — '+med.name;
   document.getElementById('modalSub').textContent='Dosis '+med.dose+' · satuan '+med.unit+'. Gunakan ini untuk mengoreksi jumlah persis (bukan menambah).';
   document.getElementById('modalBody').innerHTML =
-    '<div class="modal-field"><label>Jumlah stok saat ini</label><input type="number" inputmode="numeric" min="0" id="mfStock" class="big-num" value="'+(state.stock[key]||0)+'"></div>';
+    '<div class="modal-field"><label>Jumlah stok saat ini</label><input type="number" inputmode="decimal" min="0" step="0.5" id="mfStock" class="big-num" value="'+(state.stock[key]||0)+'"></div>';
   document.getElementById('overlay').classList.add('show');
   document.getElementById('modalSave').onclick=async()=>{
-    const val=parseInt(document.getElementById('mfStock').value,10);
+    const val=parseFloat(document.getElementById('mfStock').value);
     if(isNaN(val) || val<0){ toast('Masukkan angka yang valid.'); return; }
     setSync('busy');
     try{
@@ -809,7 +821,7 @@ async function addMedicine(){
   const dose=document.getElementById('newMedDose').value.trim();
   const unit=document.getElementById('newMedUnit').value.trim() || 'tablet';
   const desc=document.getElementById('newMedDesc').value.trim();
-  const stock=parseInt(document.getElementById('newMedStock').value,10) || 0;
+  const stock=parseFloat(document.getElementById('newMedStock').value) || 0;
   if(!name){ toast('Nama obat wajib diisi.'); return; }
   const key=uniqueKey(slugify(name), Object.keys(state.medDefs||{}));
   setSync('busy');
@@ -895,7 +907,7 @@ function renderScheduleEditor(){
       }
       return '<div class="slot-editor-item" data-uid="'+item.uid+'">'
         + '<span class="slot-editor-item-name">'+escapeHtml(name)+note+'</span>'
-        + '<input type="number" min="1" class="item-qty" value="'+item.qty+'">'
+        + '<input type="number" inputmode="decimal" min="0.5" step="0.5" class="item-qty" value="'+item.qty+'">'
         + '<button class="icon-btn-sm danger remove-item" aria-label="Hapus obat dari slot ini">'+TRASH_ICON+'</button>'
         + '</div>';
     }).join('');
@@ -908,7 +920,7 @@ function renderScheduleEditor(){
       + items
       + '<div class="slot-editor-add">'
       + '<select class="add-item-select">'+medOptions+'</select>'
-      + '<input type="number" min="1" value="1" class="add-item-qty">'
+      + '<input type="number" inputmode="decimal" min="0.5" step="0.5" value="1" class="add-item-qty">'
       + '<button type="button" class="add-item-btn">+ Tambah</button>'
       + '</div>'
       + '</div>';
@@ -948,7 +960,7 @@ function renderScheduleEditor(){
     card.querySelectorAll('.item-qty').forEach(input=>{
       input.addEventListener('change', ()=>{
         const uid=input.closest('.slot-editor-item').dataset.uid;
-        const val=Math.max(1, parseInt(input.value,10)||1);
+        const val=Math.max(0.5, parseFloat(input.value)||1);
         updateSlot(slotId, s=>{
           const old=s.items.find(i=>i.uid===uid);
           if(!old || old.qty===val) return;
@@ -968,7 +980,7 @@ function renderScheduleEditor(){
       const sel=card.querySelector('.add-item-select');
       const qtyInput=card.querySelector('.add-item-qty');
       const key=sel.value;
-      const qty=Math.max(1, parseInt(qtyInput.value,10)||1);
+      const qty=Math.max(0.5, parseFloat(qtyInput.value)||1);
       if(!key) return;
       updateSlot(slotId, s=>{
         const existing=s.items.find(it=>!it.substitute && it.key===key && !it.removedOn);
@@ -1014,7 +1026,7 @@ function ensureRestockList(){
       + '<button class="edit-icon" aria-label="Koreksi stok manual">'+EDIT_ICON+'</button></div>'
       + '<div class="restock-current">Stok saat ini: <b id="cur-'+k+'">–</b> '+escapeHtml(med.unit)+'</div>'
       + '<div class="restock-actions">'
-      + '<input type="number" inputmode="numeric" min="1" class="restock-input" placeholder="Jumlah">'
+      + '<input type="number" inputmode="decimal" min="0.5" step="0.5" class="restock-input" placeholder="Jumlah">'
       + '<button class="restock-add" type="button">+ Tambah</button>'
       + '</div></div>';
   }).join('');
@@ -1022,7 +1034,7 @@ function ensureRestockList(){
     const key=row.dataset.key;
     const input=row.querySelector('.restock-input');
     row.querySelector('.restock-add').addEventListener('click', ()=>{
-      const qty=parseInt(input.value,10);
+      const qty=parseFloat(input.value);
       if(!qty || qty<=0){ toast('Masukkan jumlah yang valid.'); return; }
       addStock(key, qty);
       input.value='';
@@ -1035,7 +1047,7 @@ function updateRestockNumbers(){
   if(!state.stock || !state.medDefs) return;
   Object.keys(state.medDefs).forEach(k=>{
     const el=document.getElementById('cur-'+k);
-    if(el) el.textContent = state.stock[k]||0;
+    if(el) el.textContent = formatQty(state.stock[k]||0);
   });
 }
 function renderRestockHistory(rows){
@@ -1049,7 +1061,7 @@ function renderRestockHistory(rows){
     }
     return '<div class="restock-hist-row"><div><div class="restock-hist-name">'+escapeHtml(r.medName||'')+'</div>'
       + '<div class="restock-hist-meta">'+escapeHtml(when)+'</div></div>'
-      + '<div class="restock-hist-qty">+'+r.qty+' '+escapeHtml(r.unit||'')+'</div></div>';
+      + '<div class="restock-hist-qty">+'+formatQty(r.qty)+' '+escapeHtml(r.unit||'')+'</div></div>';
   }).join('');
 }
 
@@ -1117,7 +1129,7 @@ function renderTimeline(){
       return '<div class="'+rowClass+'" data-slot="'+slot.id+'" data-uid="'+item.uid+'">'
         + '<div class="checkbox" role="checkbox" aria-checked="'+d.checked+'" tabindex="0" aria-label="'+escapeHtml(d.med.name)+'">'+CHECK_ICON+'</div>'
         + '<div class="dose-info"><div class="dose-name">'+escapeHtml(d.med.name)+'</div>'
-        + '<div class="dose-meta">'+escapeHtml(d.med.dose)+' · '+item.qty+' '+escapeHtml(d.med.unit)+subTag+outTag+'</div></div>'
+        + '<div class="dose-meta">'+escapeHtml(d.med.dose)+' · '+formatQty(item.qty)+' '+escapeHtml(d.med.unit)+subTag+outTag+'</div></div>'
         + '</div>';
     }).join('');
     return '<div class="slot" data-accent="'+slot.accent+'">'
@@ -1170,7 +1182,7 @@ function renderStockChart(){
     svg += '<text x="0" y="'+(barY+9.5)+'" font-size="9.3" fill="'+COLORS.ink+'">'+escapeHtml(med.name)+'</text>';
     svg += '<rect x="'+trackX+'" y="'+barY+'" width="'+trackW+'" height="13" rx="4" fill="#eef2f0"/>';
     svg += '<rect x="'+trackX+'" y="'+barY+'" width="'+w+'" height="13" rx="4" fill="'+color+'"/>';
-    svg += '<text x="'+(trackX+trackW+6)+'" y="'+(barY+10)+'" font-size="9.3" fill="'+COLORS.inkSoft+'">'+qty+'/'+med.initialStock+'</text>';
+    svg += '<text x="'+(trackX+trackW+6)+'" y="'+(barY+10)+'" font-size="9.3" fill="'+COLORS.inkSoft+'">'+formatQty(qty)+'/'+formatQty(med.initialStock)+'</text>';
   });
   el.innerHTML = '<svg viewBox="0 0 '+chartW+' '+height+'" style="width:100%;height:auto;display:block;font-family:Inter,sans-serif">'+svg+'</svg>';
 }
@@ -1272,8 +1284,8 @@ document.getElementById('printBtn').addEventListener('click', ()=>{
       + '<td>'+escapeHtml(med.name)+' '+escapeHtml(med.dose)+'</td>'
       + '<td>'+escapeHtml(med.desc||'–')+'</td>'
       + '<td>'+escapeHtml(formatDosagePerDay(dosage[k]))+'</td>'
-      + '<td>'+med.initialStock+' '+escapeHtml(med.unit)+'</td>'
-      + '<td>'+qty+' '+escapeHtml(med.unit)+'</td>'
+      + '<td>'+formatQty(med.initialStock)+' '+escapeHtml(med.unit)+'</td>'
+      + '<td>'+formatQty(qty)+' '+escapeHtml(med.unit)+'</td>'
       + '<td class="'+cls+'">'+st.label+'</td>'
       + '</tr>';
   });
