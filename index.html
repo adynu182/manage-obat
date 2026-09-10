@@ -288,6 +288,13 @@
     th,td{ text-align:left; padding:5px 4px; border-bottom:1px solid #ddd; }
     th{ font-weight:700; }
     .p-ok{ color:#1a7a4f; } .p-warn{ color:#946108; } .p-bad{ color:#a83b31; font-weight:700; }
+    .poster-slot{ margin:0 0 22px; page-break-inside:avoid; }
+    .poster-time{ font-family:var(--serif); font-size:25px; font-weight:700; }
+    .poster-label{ font-size:12.5px; font-weight:400; color:#555; margin-left:9px; }
+    .poster-item{ font-size:16px; margin:6px 0 0 6px; }
+    .poster-item-note{ font-size:11.5px; color:#777; font-weight:400; }
+    .poster-item-desc{ font-size:11.5px; color:#777; font-style:italic; margin:1px 0 0 22px; }
+    .poster-empty{ font-size:13px; color:#666; }
   }
 </style>
 </head>
@@ -335,6 +342,12 @@
       <div class="section">
         <p class="section-head">Jadwal hari ini<small>Ketuk kotak saat obat sudah diminum — stok akan otomatis berkurang</small></p>
         <div class="timeline" id="timeline"></div>
+      </div>
+      <div class="print-wrap">
+        <button class="btn-print" id="printScheduleBtn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Cetak jadwal (tempel di dinding)
+        </button>
       </div>
     </section>
 
@@ -462,14 +475,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <div id="printReport">
-    <p class="p-h1">Laporan Stok Obat</p>
-    <p class="p-sub" id="pDate">–</p>
-    <table>
-      <thead><tr><th>Obat</th><th>Deskripsi</th><th>Dosis/hari</th><th>Stok awal</th><th>Stok saat ini</th><th>Estimasi habis</th></tr></thead>
-      <tbody id="pStock"></tbody>
-    </table>
-  </div>
+  <div id="printReport"></div>
 
   <!-- firebase-config.js mengisi window.FIREBASE_CONFIG. Jangan commit file itu ke Git/repo publik. -->
   <script src="firebase-config.js"></script>
@@ -1272,7 +1278,6 @@ document.getElementById('printBtn').addEventListener('click', ()=>{
   if(!state.stock || !state.medDefs || !state.schedule){ toast('Data belum siap.'); return; }
   const usage = computeUsage(state.stock);
   const dosage = computeDosagePerDay();
-  document.getElementById('pDate').textContent = 'Dicetak '+humanDate(toDateStr(new Date()));
 
   let stockRows='';
   Object.keys(state.medDefs).forEach(k=>{
@@ -1289,7 +1294,49 @@ document.getElementById('printBtn').addEventListener('click', ()=>{
       + '<td class="'+cls+'">'+st.label+'</td>'
       + '</tr>';
   });
-  document.getElementById('pStock').innerHTML = stockRows || '<tr><td colspan="6">Belum ada obat.</td></tr>';
+
+  document.getElementById('printReport').innerHTML =
+    '<p class="p-h1">Laporan Stok Obat</p>'
+    + '<p class="p-sub">Dicetak '+humanDate(toDateStr(new Date()))+'</p>'
+    + '<table><thead><tr><th>Obat</th><th>Deskripsi</th><th>Dosis/hari</th><th>Stok awal</th><th>Stok saat ini</th><th>Estimasi habis</th></tr></thead>'
+    + '<tbody>'+(stockRows || '<tr><td colspan="6">Belum ada obat.</td></tr>')+'</tbody></table>';
+
+  window.print();
+});
+
+/* Cetak jadwal minum obat dalam format besar & ringkas supaya bisa ditempel di
+ * dinding -- daftar per waktu, urut pagi ke malam (sudah diurutkan oleh scheduleForDate). */
+document.getElementById('printScheduleBtn').addEventListener('click', ()=>{
+  if(!state.medDefs || !state.schedule){ toast('Data belum siap.'); return; }
+  const slots = activeScheduleToday();
+
+  let body='';
+  slots.forEach(slot=>{
+    let itemsHtml='';
+    (slot.items||[]).forEach(item=>{
+      let med, note='';
+      if(item.substitute){
+        med = state.medDefs[item.primary];
+        const backMed = state.medDefs[item.backup];
+        if(backMed) note = ' <span class="poster-item-note">(pengganti: '+escapeHtml(backMed.name)+' bila habis)</span>';
+      } else {
+        med = state.medDefs[item.key];
+      }
+      if(!med) return;
+      itemsHtml += '<div class="poster-item">• '+escapeHtml(med.name)+' '+escapeHtml(med.dose)+' — '+formatQty(item.qty)+' '+escapeHtml(med.unit)+note+'</div>';
+      if(med.desc) itemsHtml += '<div class="poster-item-desc">'+escapeHtml(med.desc)+'</div>';
+    });
+    if(!itemsHtml) return;
+    body += '<div class="poster-slot">'
+      + '<span class="poster-time">'+slot.time+'</span><span class="poster-label">'+escapeHtml(slot.label)+'</span>'
+      + itemsHtml
+      + '</div>';
+  });
+
+  document.getElementById('printReport').innerHTML =
+    '<p class="p-h1">Jadwal Minum Obat</p>'
+    + '<p class="p-sub">Berlaku mulai '+humanDate(toDateStr(new Date()))+'</p>'
+    + (body || '<p class="poster-empty">Belum ada jadwal yang diatur. Tambahkan lewat halaman Atur.</p>');
 
   window.print();
 });
