@@ -351,7 +351,7 @@
         <div class="timeline" id="timeline"></div>
       </div>
       <div class="section">
-        <p class="section-head">Catatan jadwal<small>Ikut tercetak di bagian bawah jadwal saat dicetak</small></p>
+        <p class="section-head">Catatan jadwal<small>Khusus untuk tanggal yang sedang dipilih — sama seperti ceklisan, otomatis kosong lagi kalau ganti tanggal</small></p>
         <textarea class="note-textarea" id="scheduleNoteInput" placeholder="mis. Untuk yang jaga malam: cek dulu sebelum kasih obat tidur."></textarea>
       </div>
       <div class="print-wrap">
@@ -404,7 +404,7 @@
         <div id="statusList"></div>
       </div>
       <div class="section">
-        <p class="section-head">Catatan laporan stok<small>Ikut tercetak di bagian bawah laporan stok saat dicetak</small></p>
+        <p class="section-head">Catatan laporan stok<small>Khusus untuk tanggal yang sedang dipilih — sama seperti ceklisan, otomatis kosong lagi kalau ganti tanggal</small></p>
         <textarea class="note-textarea" id="stockNoteInput" placeholder="mis. Tolong beli Furosemide minggu ini, stok mulai menipis."></textarea>
       </div>
       <div class="print-wrap">
@@ -682,15 +682,13 @@ async function ensureSchedule(){
   const snap=await getDoc(ref);
   if(!snap.exists()) await setDoc(ref, { slots: [] });
 }
-async function ensureNotes(){
-  const ref=userDoc('notes','current');
-  const snap=await getDoc(ref);
-  if(!snap.exists()) await setDoc(ref, { schedule:'', stock:'' });
-}
-/** Isi ulang textarea catatan dari Firestore, tapi jangan timpa kalau textarea
- *  itu sedang diketik (fokus) supaya tidak mengganggu user. */
-function listenNotes(){
-  return onSnapshot(userDoc('notes','current'), snap=>{
+/** Catatan disimpan per tanggal (notes/{tanggal}), persis seperti ceklisan (medLogs/{tanggal}) --
+ *  jadi otomatis kosong lagi saat pindah ke tanggal yang belum ada catatannya. */
+function listenNotesForDate(dateStr){
+  if(unsubNotes) unsubNotes();
+  state.notes=null;
+  const ref=userDoc('notes', dateStr);
+  unsubNotes=onSnapshot(ref, snap=>{
     state.notes = snap.exists() ? snap.data() : { schedule:'', stock:'' };
     const schedInput=document.getElementById('scheduleNoteInput');
     const stockInput=document.getElementById('stockNoteInput');
@@ -1348,14 +1346,14 @@ let noteSaveTimer=null;
 function saveNote(field, value){
   clearTimeout(noteSaveTimer);
   noteSaveTimer = setTimeout(()=>{
-    setDoc(userDoc('notes','current'), { [field]: value }, { merge:true }).catch(e=>{
+    setDoc(userDoc('notes', state.date), { [field]: value }, { merge:true }).catch(e=>{
       console.error(e); toast('Gagal menyimpan catatan.');
     });
   }, 600);
 }
 function flushNoteSave(field, value){
   clearTimeout(noteSaveTimer);
-  setDoc(userDoc('notes','current'), { [field]: value }, { merge:true })
+  setDoc(userDoc('notes', state.date), { [field]: value }, { merge:true })
     .then(()=> toast('Catatan tersimpan.'))
     .catch(e=>{ console.error(e); toast('Gagal menyimpan catatan.'); });
 }
@@ -1425,6 +1423,7 @@ datePicker.addEventListener('change',()=>{
   if(!datePicker.value) return;
   state.date=datePicker.value;
   listenLog(state.date);
+  listenNotesForDate(state.date);
   render();
   if(currentPage==='laporan') renderLaporan();
 });
@@ -1432,6 +1431,7 @@ document.getElementById('todayBtn').addEventListener('click',()=>{
   state.date=toDateStr(new Date());
   datePicker.value=state.date;
   listenLog(state.date);
+  listenNotesForDate(state.date);
   render();
   if(currentPage==='laporan') renderLaporan();
 });
@@ -1547,13 +1547,13 @@ function resetAppState(){
 async function bootApp(){
   setSync('loading');
   try{
-    await Promise.all([ensureStock(), ensureMedDefs(), ensureSchedule(), ensureNotes()]);
+    await Promise.all([ensureStock(), ensureMedDefs(), ensureSchedule()]);
     unsubStock = listenStock();
     unsubMedDefs = listenMedDefs();
     unsubSchedule = listenSchedule();
     listenLog(state.date);
+    listenNotesForDate(state.date);
     unsubRestock = listenRestockHistory();
-    unsubNotes = listenNotes();
   }catch(e){
     console.error(e); setSync('err');
     toast('Tidak dapat terhubung ke Firestore. Pastikan Firestore sudah diaktifkan & aturan keamanan mengizinkan akun ini.');
