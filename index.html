@@ -212,6 +212,10 @@
 
   /* ---------- print button ---------- */
   .print-wrap{ padding:22px 16px 6px; max-width:640px; margin:0 auto; }
+  .note-textarea{
+    width:100%; min-height:76px; border:1.5px solid var(--border); border-radius:var(--radius-md);
+    padding:12px; font-family:inherit; font-size:13.5px; line-height:1.5; resize:vertical; background:#fff; color:var(--ink);
+  }
   .btn-print{
     width:100%; display:flex; align-items:center; justify-content:center; gap:9px;
     background:#fff; border:1.5px solid var(--brand); color:var(--brand);
@@ -295,6 +299,9 @@
     .poster-item-note{ font-size:11.5px; color:#777; font-weight:400; }
     .poster-item-desc{ font-size:11.5px; color:#777; font-style:italic; margin:1px 0 0 22px; }
     .poster-empty{ font-size:13px; color:#666; }
+    .poster-note{ margin-top:26px; padding-top:12px; border-top:1px dashed #999; }
+    .poster-note-label{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#555; margin-bottom:4px; }
+    .poster-note-text{ font-size:13px; line-height:1.5; white-space:pre-wrap; }
   }
 </style>
 </head>
@@ -342,6 +349,10 @@
       <div class="section">
         <p class="section-head">Jadwal hari ini<small>Ketuk kotak saat obat sudah diminum — stok akan otomatis berkurang</small></p>
         <div class="timeline" id="timeline"></div>
+      </div>
+      <div class="section">
+        <p class="section-head">Catatan jadwal<small>Ikut tercetak di bagian bawah jadwal saat dicetak</small></p>
+        <textarea class="note-textarea" id="scheduleNoteInput" placeholder="mis. Untuk yang jaga malam: cek dulu sebelum kasih obat tidur."></textarea>
       </div>
       <div class="print-wrap">
         <button class="btn-print" id="printScheduleBtn">
@@ -391,6 +402,10 @@
       <div class="section">
         <p class="section-head">Status jadwal &amp; minum obat<small id="statusDateLabel">–</small></p>
         <div id="statusList"></div>
+      </div>
+      <div class="section">
+        <p class="section-head">Catatan laporan stok<small>Ikut tercetak di bagian bawah laporan stok saat dicetak</small></p>
+        <textarea class="note-textarea" id="stockNoteInput" placeholder="mis. Tolong beli Furosemide minggu ini, stok mulai menipis."></textarea>
       </div>
       <div class="print-wrap">
         <button class="btn-print" id="printBtn">
@@ -530,7 +545,7 @@ const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus'
 const SCHEDULE_EPOCH = '2026-09-05'; // fallback "mulai berlaku" untuk data lama yang belum punya tanggal
 
 /* ---------------- state ---------------- */
-const state = { stock:null, log:null, medDefs:null, schedule:null, date: toDateStr(new Date()) };
+const state = { stock:null, log:null, medDefs:null, schedule:null, notes:null, date: toDateStr(new Date()) };
 let unsubLog = null;
 let currentPage = 'jadwal';
 let restockKeysSig = '';
@@ -666,6 +681,22 @@ async function ensureSchedule(){
   const ref=userDoc('schedule','current');
   const snap=await getDoc(ref);
   if(!snap.exists()) await setDoc(ref, { slots: [] });
+}
+async function ensureNotes(){
+  const ref=userDoc('notes','current');
+  const snap=await getDoc(ref);
+  if(!snap.exists()) await setDoc(ref, { schedule:'', stock:'' });
+}
+/** Isi ulang textarea catatan dari Firestore, tapi jangan timpa kalau textarea
+ *  itu sedang diketik (fokus) supaya tidak mengganggu user. */
+function listenNotes(){
+  return onSnapshot(userDoc('notes','current'), snap=>{
+    state.notes = snap.exists() ? snap.data() : { schedule:'', stock:'' };
+    const schedInput=document.getElementById('scheduleNoteInput');
+    const stockInput=document.getElementById('stockNoteInput');
+    if(schedInput && document.activeElement!==schedInput) schedInput.value = state.notes.schedule||'';
+    if(stockInput && document.activeElement!==stockInput) stockInput.value = state.notes.stock||'';
+  }, err=>{ console.error(err); toast('Gagal memuat catatan.'); });
 }
 function listenStock(){
   return onSnapshot(userDoc('medStock','current'), snap=>{ state.stock = snap.exists()?snap.data():{}; render(); },
@@ -1274,6 +1305,12 @@ async function renderLaporan(){
 }
 
 /* ---------------- print report ---------------- */
+/** Bangun blok "Catatan" di bagian bawah laporan cetak (kosong -> tidak ditampilkan). */
+function noteBlockHtml(text){
+  const t=(text||'').trim();
+  if(!t) return '';
+  return '<div class="poster-note"><div class="poster-note-label">Catatan</div><div class="poster-note-text">'+escapeHtml(t).replace(/\n/g,'<br>')+'</div></div>';
+}
 document.getElementById('printBtn').addEventListener('click', ()=>{
   if(!state.stock || !state.medDefs || !state.schedule){ toast('Data belum siap.'); return; }
   const usage = computeUsage(state.stock);
@@ -1299,10 +1336,35 @@ document.getElementById('printBtn').addEventListener('click', ()=>{
     '<p class="p-h1">Laporan Stok Obat</p>'
     + '<p class="p-sub">Dicetak '+humanDate(toDateStr(new Date()))+'</p>'
     + '<table><thead><tr><th>Obat</th><th>Deskripsi</th><th>Dosis/hari</th><th>Stok awal</th><th>Stok saat ini</th><th>Estimasi habis</th></tr></thead>'
-    + '<tbody>'+(stockRows || '<tr><td colspan="6">Belum ada obat.</td></tr>')+'</tbody></table>';
+    + '<tbody>'+(stockRows || '<tr><td colspan="6">Belum ada obat.</td></tr>')+'</tbody></table>'
+    + noteBlockHtml(state.notes && state.notes.stock);
 
   window.print();
 });
+
+/* Catatan jadwal & catatan laporan stok -- disimpan ke Firestore (users/{uid}/notes/current)
+ * supaya ikut tercetak di laporan & tersimpan permanen, bukan cuma di layar. */
+let noteSaveTimer=null;
+function saveNote(field, value){
+  clearTimeout(noteSaveTimer);
+  noteSaveTimer = setTimeout(()=>{
+    setDoc(userDoc('notes','current'), { [field]: value }, { merge:true }).catch(e=>{
+      console.error(e); toast('Gagal menyimpan catatan.');
+    });
+  }, 600);
+}
+function flushNoteSave(field, value){
+  clearTimeout(noteSaveTimer);
+  setDoc(userDoc('notes','current'), { [field]: value }, { merge:true })
+    .then(()=> toast('Catatan tersimpan.'))
+    .catch(e=>{ console.error(e); toast('Gagal menyimpan catatan.'); });
+}
+const scheduleNoteInput=document.getElementById('scheduleNoteInput');
+scheduleNoteInput.addEventListener('input', e=> saveNote('schedule', e.target.value));
+scheduleNoteInput.addEventListener('blur', e=> flushNoteSave('schedule', e.target.value));
+const stockNoteInput=document.getElementById('stockNoteInput');
+stockNoteInput.addEventListener('input', e=> saveNote('stock', e.target.value));
+stockNoteInput.addEventListener('blur', e=> flushNoteSave('stock', e.target.value));
 
 /* Cetak jadwal minum obat dalam format besar & ringkas supaya bisa ditempel di
  * dinding -- daftar per waktu, urut pagi ke malam (sudah diurutkan oleh scheduleForDate). */
@@ -1336,7 +1398,8 @@ document.getElementById('printScheduleBtn').addEventListener('click', ()=>{
   document.getElementById('printReport').innerHTML =
     '<p class="p-h1">Jadwal Minum Obat</p>'
     + '<p class="p-sub">Berlaku mulai '+humanDate(toDateStr(new Date()))+'</p>'
-    + (body || '<p class="poster-empty">Belum ada jadwal yang diatur. Tambahkan lewat halaman Atur.</p>');
+    + (body || '<p class="poster-empty">Belum ada jadwal yang diatur. Tambahkan lewat halaman Atur.</p>')
+    + noteBlockHtml(state.notes && state.notes.schedule);
 
   window.print();
 });
@@ -1460,33 +1523,37 @@ document.getElementById('signOutBtn').addEventListener('click', async ()=>{
   catch(e){ console.error(e); toast('Gagal keluar. Coba lagi.'); }
 });
 
-let unsubStock=null, unsubMedDefs=null, unsubSchedule=null, unsubRestock=null;
+let unsubStock=null, unsubMedDefs=null, unsubSchedule=null, unsubRestock=null, unsubNotes=null;
 function teardownListeners(){
   if(unsubStock) unsubStock();
   if(unsubMedDefs) unsubMedDefs();
   if(unsubSchedule) unsubSchedule();
   if(unsubRestock) unsubRestock();
+  if(unsubNotes) unsubNotes();
   if(unsubLog) unsubLog();
-  unsubStock=unsubMedDefs=unsubSchedule=unsubRestock=unsubLog=null;
+  unsubStock=unsubMedDefs=unsubSchedule=unsubRestock=unsubNotes=unsubLog=null;
 }
 function resetAppState(){
-  state.stock=null; state.log=null; state.medDefs=null; state.schedule=null;
+  state.stock=null; state.log=null; state.medDefs=null; state.schedule=null; state.notes=null;
   state.date=toDateStr(new Date());
   datePicker.value=state.date;
   currentPage='jadwal';
   showPage('jadwal');
   restockKeysSig='';
+  document.getElementById('scheduleNoteInput').value='';
+  document.getElementById('stockNoteInput').value='';
 }
 
 async function bootApp(){
   setSync('loading');
   try{
-    await Promise.all([ensureStock(), ensureMedDefs(), ensureSchedule()]);
+    await Promise.all([ensureStock(), ensureMedDefs(), ensureSchedule(), ensureNotes()]);
     unsubStock = listenStock();
     unsubMedDefs = listenMedDefs();
     unsubSchedule = listenSchedule();
     listenLog(state.date);
     unsubRestock = listenRestockHistory();
+    unsubNotes = listenNotes();
   }catch(e){
     console.error(e); setSync('err');
     toast('Tidak dapat terhubung ke Firestore. Pastikan Firestore sudah diaktifkan & aturan keamanan mengizinkan akun ini.');
