@@ -403,10 +403,6 @@
         <p class="section-head">Status jadwal &amp; minum obat<small id="statusDateLabel">–</small></p>
         <div id="statusList"></div>
       </div>
-      <div class="section">
-        <p class="section-head">Catatan laporan stok<small>Khusus untuk tanggal yang sedang dipilih — sama seperti ceklisan, otomatis kosong lagi kalau ganti tanggal</small></p>
-        <textarea class="note-textarea" id="stockNoteInput" placeholder="mis. Tolong beli Furosemide minggu ini, stok mulai menipis."></textarea>
-      </div>
       <div class="print-wrap">
         <button class="btn-print" id="printBtn">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
@@ -691,9 +687,7 @@ function listenNotesForDate(dateStr){
   unsubNotes=onSnapshot(ref, snap=>{
     state.notes = snap.exists() ? snap.data() : { schedule:'', stock:'' };
     const schedInput=document.getElementById('scheduleNoteInput');
-    const stockInput=document.getElementById('stockNoteInput');
     if(schedInput && document.activeElement!==schedInput) schedInput.value = state.notes.schedule||'';
-    if(stockInput && document.activeElement!==stockInput) stockInput.value = state.notes.stock||'';
   }, err=>{ console.error(err); toast('Gagal memuat catatan.'); });
 }
 function listenStock(){
@@ -1334,8 +1328,7 @@ document.getElementById('printBtn').addEventListener('click', ()=>{
     '<p class="p-h1">Laporan Stok Obat</p>'
     + '<p class="p-sub">Dicetak '+humanDate(toDateStr(new Date()))+'</p>'
     + '<table><thead><tr><th>Obat</th><th>Deskripsi</th><th>Dosis/hari</th><th>Stok awal</th><th>Stok saat ini</th><th>Estimasi habis</th></tr></thead>'
-    + '<tbody>'+(stockRows || '<tr><td colspan="6">Belum ada obat.</td></tr>')+'</tbody></table>'
-    + noteBlockHtml(state.notes && state.notes.stock);
+    + '<tbody>'+(stockRows || '<tr><td colspan="6">Belum ada obat.</td></tr>')+'</tbody></table>';
 
   window.print();
 });
@@ -1360,15 +1353,12 @@ function flushNoteSave(field, value){
 const scheduleNoteInput=document.getElementById('scheduleNoteInput');
 scheduleNoteInput.addEventListener('input', e=> saveNote('schedule', e.target.value));
 scheduleNoteInput.addEventListener('blur', e=> flushNoteSave('schedule', e.target.value));
-const stockNoteInput=document.getElementById('stockNoteInput');
-stockNoteInput.addEventListener('input', e=> saveNote('stock', e.target.value));
-stockNoteInput.addEventListener('blur', e=> flushNoteSave('stock', e.target.value));
 
 /* Cetak jadwal minum obat dalam format besar & ringkas supaya bisa ditempel di
  * dinding -- daftar per waktu, urut pagi ke malam (sudah diurutkan oleh scheduleForDate). */
 document.getElementById('printScheduleBtn').addEventListener('click', ()=>{
   if(!state.medDefs || !state.schedule){ toast('Data belum siap.'); return; }
-  const slots = activeScheduleToday();
+  const slots = scheduleForDate(state.date);
 
   let body='';
   slots.forEach(slot=>{
@@ -1395,7 +1385,7 @@ document.getElementById('printScheduleBtn').addEventListener('click', ()=>{
 
   document.getElementById('printReport').innerHTML =
     '<p class="p-h1">Jadwal Minum Obat</p>'
-    + '<p class="p-sub">Berlaku mulai '+humanDate(toDateStr(new Date()))+'</p>'
+    + '<p class="p-sub">Untuk '+humanDate(state.date)+'</p>'
     + (body || '<p class="poster-empty">Belum ada jadwal yang diatur. Tambahkan lewat halaman Atur.</p>')
     + noteBlockHtml(state.notes && state.notes.schedule);
 
@@ -1541,7 +1531,6 @@ function resetAppState(){
   showPage('jadwal');
   restockKeysSig='';
   document.getElementById('scheduleNoteInput').value='';
-  document.getElementById('stockNoteInput').value='';
 }
 
 async function bootApp(){
